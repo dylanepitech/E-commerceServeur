@@ -26,7 +26,7 @@ class UserController extends AbstractController
             if (!array_search('ROLE_ADMIN', $userId)) {
                 return $this->json([
                     "message" => "Vous n'êtes pas administrateur"
-                ]);
+                ], 403);
             }
         }
 
