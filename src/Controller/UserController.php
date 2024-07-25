@@ -11,12 +11,25 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
     #[Route('/api/users', name: 'api_users', methods: ['GET'])]
+
     public function index(UserRepository $userRepository): JsonResponse
     {
+        $user = $this->getUser();
+
+        if ($user instanceof User) {
+            $userId = $user->getRoles();
+            if (!array_search('ROLE_ADMIN', $userId)) {
+                return $this->json([
+                    "message" => "Vous n'êtes pas administrateur"
+                ]);
+            }
+        }
+
         $users = $userRepository->findAll();
         $data = [];
 
@@ -37,7 +50,7 @@ class UserController extends AbstractController
         $user = $userRepository->find($id);
 
         if (!$user) {
-            return new JsonResponse(["message"=>"user introuvable"]);
+            return new JsonResponse(["message" => "user introuvable"]);
         }
 
         $data = [
@@ -59,7 +72,7 @@ class UserController extends AbstractController
         $roles = $data['roles'] ?? ['ROLE_USER'];
 
         if (!$email || !$password) {
-            return new JsonResponse(["message"=>"champs doivent etre rempli"]);
+            return new JsonResponse(["message" => "champs doivent etre rempli"]);
         }
 
         $user = new User();
@@ -80,7 +93,7 @@ class UserController extends AbstractController
         $user = $userRepository->find($id);
 
         if (!$user) {
-            return new JsonResponse(["message"=>"user introuvable"]);
+            return new JsonResponse(["message" => "user introuvable"]);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -113,7 +126,7 @@ class UserController extends AbstractController
         $user = $userRepository->find($id);
 
         if (!$user) {
-            return new JsonResponse(["message"=>"user introuvable"]);
+            return new JsonResponse(["message" => "user introuvable"]);
         }
 
         $entityManager->remove($user);
