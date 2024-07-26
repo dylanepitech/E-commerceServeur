@@ -21,11 +21,12 @@ class UserController extends AbstractController
     {
         $user = $this->getUser();
 
+
         if ($user instanceof User) {
-            $userId = $user->getRoles();
-            if (!array_search('ROLE_ADMIN', $userId)) {
+            $userRoles = $user->getRoles();
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
                 return $this->json([
-                    "message" => "Vous n'êtes pas administrateur"
+                    "message" => "Vous n'êtes pas administrateur",
                 ], 403);
             }
         }
@@ -37,6 +38,12 @@ class UserController extends AbstractController
             $data[] = [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
+                'firstname' => $user->getFirstname(),
+                'lastname' => $user->getLastname(),
+                'is_verified' => $user->isVerified(),
+                'picture' => $user->getPicture(),
+                'created_at' => $user->getCreatedAt(),
+                'updated_at' => $user->getUpdatedAt(),
                 'roles' => $user->getRoles(),
             ];
         }
@@ -56,6 +63,12 @@ class UserController extends AbstractController
         $data = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
+            'firstname' => $user->getFirstname(),
+            'lastname' => $user->getLastname(),
+            'is_verified' => $user->isVerified(),
+            'picture' => $user->getPicture(),
+            'created_at' => $user->getCreatedAt(),
+            'updated_at' => $user->getUpdatedAt(),
             'roles' => $user->getRoles(),
         ];
 
