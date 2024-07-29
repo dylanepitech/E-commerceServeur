@@ -296,4 +296,25 @@ class UserController extends AbstractController
             ]
         ], 201);
     }
+
+    #[Route('/reset-password/{token}', name: "app_reset_password", methods: ['PATCH'])]
+    public function resetPassword($token, UserRepository $userRepository, Request $request, UserPasswordHasherInterface $userPasswordHasherInterface, EntityManagerInterface $em)
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $user = $userRepository->findOneBy(["token" => $token]);
+
+            if ($user instanceof User) {
+                $passwordHash = $userPasswordHasherInterface->hashPassword($user, $data['password']);
+                $user->setPassword($passwordHash);
+                $em->persist($user);
+                $em->flush();
+            } else {
+                return $this->json(['message' => "Erreur est survenue"], 403);
+            }
+            return $this->json(['message' => "Mot de passe modifier"], 200);
+        } catch (\Throwable $th) {
+            return $this->json(['message' => "Erreur est survenue"], 500);
+        }
+    }
 }
