@@ -31,6 +31,15 @@ class MailingController extends AbstractController
             if (is_array($data['userId'])) {
                 foreach ($data['userId'] as  $userId) {
                     $user = $userRepository->find($userId);
+                    $codePromotion = new CodePromotion();
+                    $codePromotion->setUserId($user);
+                    $codePromotion->setValue($data['value']);
+                    $codePromotion->setCode($data['code']);
+                    $codePromotion->setCreatedAt(new DateTimeImmutable("now"));
+                    $dateTime = new DateTimeImmutable($data['expiration']);
+                    $codePromotion->setExpireAt($dateTime);
+                    $em->persist($codePromotion);
+                    $em->flush();
                     $this->emailService->sendEmail(
                         $user->getEmail(),
                         "L'équipe Achideco vous offre un code promotionel !",
@@ -39,7 +48,8 @@ class MailingController extends AbstractController
                             "firstname" => $user->getFirstname(),
                             "lastname" => $user->getLastname(),
                             "value" => $data['value'],
-                            "code" => $data['code']
+                            "code" => $data['code'],
+                            "expiration" => $data['expiration']
                         ]
                     );
                 }
