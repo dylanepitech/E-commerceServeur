@@ -8,10 +8,10 @@ class JWTCreatedListener
 {
     public function onJWTCreated(JWTCreatedEvent $event)
     {
-        // $payload = $event->getData();
+        $payload = $event->getData();
         $user = $event->getUser();
 
-        $payload['email'] = $user->getEmail();
+        $payload['test'] = "je suis un test";
 
         $event->setData($payload);
     }

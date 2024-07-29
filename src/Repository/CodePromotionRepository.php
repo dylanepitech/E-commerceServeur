@@ -2,39 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\Cart;
+use App\Entity\CodePromotion;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Cart>
+ * @extends ServiceEntityRepository<CodePromotion>
  */
-class CartRepository extends ServiceEntityRepository
+class CodePromotionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Cart::class);
+        parent::__construct($registry, CodePromotion::class);
     }
 
     //    /**
-    //     * @return Cart[] Returns an array of Cart objects
-    //     */
-      
-       public function findByUserCart($value): ?Cart
-          {
-              return $this->createQueryBuilder('c')
-                  ->andWhere('c.idUser = :val')
-                  ->setParameter('val', $value)
-                  ->orderBy('c.id', 'ASC')
-                  ->setMaxResults(1)
-                  ->getQuery()
-                  ->getOneOrNullResult()
-              ;
-          }
-
-       
-    //    /**
-    //     * @return Cart[] Returns an array of Cart objects
+    //     * @return CodePromotion[] Returns an array of CodePromotion objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -48,7 +31,7 @@ class CartRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Cart
+    //    public function findOneBySomeField($value): ?CodePromotion
     //    {
     //        return $this->createQueryBuilder('c')
     //            ->andWhere('c.exampleField = :val')

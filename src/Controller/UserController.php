@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
@@ -95,8 +94,8 @@ class UserController extends AbstractController
             $user = $this->getUser();
 
             if ($user instanceof USER) {
-               $userId = $user->getId();
-            }else{
+                $userId = $user->getId();
+            } else {
                 return $this->json(['message' => "Erreur est survenue"], 404);
             }
             $userInfo = $userRepository->find($userId);
@@ -151,7 +150,14 @@ class UserController extends AbstractController
                 $user->setPicture($picture);
             }
             if ($email !== null) {
-                $user->setEmail($email);
+                $email_exist = $userRepository->findByEmail($email);
+
+                if ($email_exist) {
+                    return $this->json(["message" => "Email deja pris"], 400);
+                } else {
+
+                    $user->setEmail($email);
+                }
             }
 
             if ($password !== null) {
@@ -221,9 +227,7 @@ class UserController extends AbstractController
             $user->setActif(false);
             $hashedPassword = $passwordHasher->hashPassword($user, "deleteduserdefinitively");
             $user->setPassword($hashedPassword);
-            
             $entityManager->flush();
-
         } catch (\Throwable $th) {
             return $this->json(['message' => "Erreur est survenue"], 500);
         }
@@ -232,7 +236,7 @@ class UserController extends AbstractController
     }
 
     #[Route("/api/users", name: "api_user_create", methods: ["POST"])]
-    public function create(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function create(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, UserRepository $userRepository): JsonResponse
     {
 
         try {
@@ -251,6 +255,12 @@ class UserController extends AbstractController
 
             if (!$email || !$password || !$firstname || !$lastname) {
                 return $this->json(["message" => "Tous les champs sont requis"], 400);
+            }
+
+            $email_exist = $userRepository->findByEmail($email);
+
+            if ($email_exist) {
+                return $this->json(["message" => "Email deja pris"], 400);
             }
 
             $user = new User();

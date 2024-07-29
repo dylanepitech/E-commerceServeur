@@ -3,6 +3,8 @@
 namespace App\Entity;
  
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -55,6 +57,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?bool $is_actif = null;
+
+    /**
+     * @var Collection<int, UserComplements>
+     */
+    #[ORM\OneToMany(targetEntity: UserComplements::class, mappedBy: 'userId')]
+    private Collection $userComplements;
+
+    /**
+     * @var Collection<int, CodePromotion>
+     */
+    #[ORM\OneToMany(targetEntity: CodePromotion::class, mappedBy: 'userId')]
+    private Collection $codePromotions;
+
+    public function __construct()
+    {
+        $this->userComplements = new ArrayCollection();
+        $this->codePromotions = new ArrayCollection();
+    }
  
  
     public function getId(): ?int
@@ -224,6 +244,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setActif(bool $is_actif): static
     {
         $this->is_actif = $is_actif;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserComplements>
+     */
+    public function getUserComplements(): Collection
+    {
+        return $this->userComplements;
+    }
+
+    public function addUserComplement(UserComplements $userComplement): static
+    {
+        if (!$this->userComplements->contains($userComplement)) {
+            $this->userComplements->add($userComplement);
+            $userComplement->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserComplement(UserComplements $userComplement): static
+    {
+        if ($this->userComplements->removeElement($userComplement)) {
+            // set the owning side to null (unless already changed)
+            if ($userComplement->getUserId() === $this) {
+                $userComplement->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CodePromotion>
+     */
+    public function getCodePromotions(): Collection
+    {
+        return $this->codePromotions;
+    }
+
+    public function addCodePromotion(CodePromotion $codePromotion): static
+    {
+        if (!$this->codePromotions->contains($codePromotion)) {
+            $this->codePromotions->add($codePromotion);
+            $codePromotion->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCodePromotion(CodePromotion $codePromotion): static
+    {
+        if ($this->codePromotions->removeElement($codePromotion)) {
+            // set the owning side to null (unless already changed)
+            if ($codePromotion->getUserId() === $this) {
+                $codePromotion->setUserId(null);
+            }
+        }
 
         return $this;
     }
