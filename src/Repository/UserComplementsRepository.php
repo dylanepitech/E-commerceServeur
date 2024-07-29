@@ -16,6 +16,18 @@ class UserComplementsRepository extends ServiceEntityRepository
         parent::__construct($registry, UserComplements::class);
     }
 
+    public function findByUserId($value): ?UserComplements
+          {
+              return $this->createQueryBuilder('u')
+                  ->andWhere('u.userId = :val')
+                  ->setParameter('val', $value)
+                  ->orderBy('u.id', 'ASC')
+                  ->setMaxResults(1)
+                  ->getQuery()
+                  ->getOneOrNullResult()
+              ;
+          }
+
     //    /**
     //     * @return UserComplements[] Returns an array of UserComplements objects
     //     */
