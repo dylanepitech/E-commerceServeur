@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
@@ -95,8 +94,8 @@ class UserController extends AbstractController
             $user = $this->getUser();
 
             if ($user instanceof USER) {
-               $userId = $user->getId();
-            }else{
+                $userId = $user->getId();
+            } else {
                 return $this->json(['message' => "Erreur est survenue"], 404);
             }
             $userInfo = $userRepository->find($userId);
@@ -221,9 +220,8 @@ class UserController extends AbstractController
             $user->setActif(false);
             $hashedPassword = $passwordHasher->hashPassword($user, "deleteduserdefinitively");
             $user->setPassword($hashedPassword);
-            
-            $entityManager->flush();
 
+            $entityManager->flush();
         } catch (\Throwable $th) {
             return $this->json(['message' => "Erreur est survenue"], 500);
         }
