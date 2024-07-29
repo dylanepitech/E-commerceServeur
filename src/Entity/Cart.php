@@ -1,4 +1,5 @@
-<?
+<?php
+
 namespace App\Entity;
 
 use App\Repository\CartRepository;
@@ -23,7 +24,7 @@ class Cart
     private ?\DateTimeImmutable $date_start = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $date_validation = null;
+    private ?\DateTimeImmutable  $date_validation = null;
 
     public function getId(): ?int
     {
@@ -54,24 +55,24 @@ class Cart
         return $this;
     }
 
-    public function getDateStart(): ?\DateTimeImmutable
+    public function getDateStart(): ?\DateTimeImmutable 
     {
         return $this->date_start;
     }
 
-    public function setDateStart(\DateTimeImmutable $date_start): static
+    public function setDateStart(\DateTimeImmutable  $date_start): static
     {
         $this->date_start = $date_start;
 
         return $this;
     }
 
-    public function getDateValidation(): ?\DateTimeImmutable
+    public function getDateValidation(): ?\DateTimeImmutable 
     {
         return $this->date_validation;
     }
 
-    public function setDateValidation(?\DateTimeImmutable $date_validation): static
+    public function setDateValidation(?\DateTimeImmutable  $date_validation): static
     {
         $this->date_validation = $date_validation;
 
