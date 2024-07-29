@@ -16,6 +16,7 @@ class RegisterController extends AbstractController
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        
  
         if (empty($data['email']) || empty($data['password']) || empty($data['firstname']) || empty($data['lastname'])) {
             return $this->json(['message' => 'Tous les champs sont requis'], 403);
@@ -32,6 +33,8 @@ class RegisterController extends AbstractController
         $user->setUpdatedAt(new \DateTimeImmutable());
         $user->setVerified(false);
         $user->setPicture($data['picture'] ?? null);
+        $user->setActif(true);
+
  
         $entityManager->persist($user);
         $entityManager->flush();

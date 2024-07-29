@@ -52,6 +52,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
  
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
+
+    #[ORM\Column]
+    private ?bool $is_actif = null;
  
  
     public function getId(): ?int
@@ -210,6 +213,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->updated_at = $updated_at;
  
+        return $this;
+    }
+
+    public function isActif(): ?bool
+    {
+        return $this->is_actif;
+    }
+
+    public function setActif(bool $is_actif): static
+    {
+        $this->is_actif = $is_actif;
+
         return $this;
     }
  
