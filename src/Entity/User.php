@@ -70,10 +70,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: CodePromotion::class, mappedBy: 'userId')]
     private Collection $codePromotions;
 
+    /**
+     * @var Collection<int, Order>
+     */
+    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'idUser')]
+    private Collection $orders;
+
+    /**
+     * @var Collection<int, Whishlist>
+     */
+    #[ORM\OneToMany(targetEntity: Whishlist::class, mappedBy: 'idUser')]
+    private Collection $whishlists;
+
     public function __construct()
     {
         $this->userComplements = new ArrayCollection();
         $this->codePromotions = new ArrayCollection();
+        $this->orders = new ArrayCollection();
+        $this->whishlists = new ArrayCollection();
     }
  
  
@@ -302,6 +316,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($codePromotion->getUserId() === $this) {
                 $codePromotion->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Order>
+     */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): static
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders->add($order);
+            $order->setIdUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): static
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getIdUser() === $this) {
+                $order->setIdUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Whishlist>
+     */
+    public function getWhishlists(): Collection
+    {
+        return $this->whishlists;
+    }
+
+    public function addWhishlist(Whishlist $whishlist): static
+    {
+        if (!$this->whishlists->contains($whishlist)) {
+            $this->whishlists->add($whishlist);
+            $whishlist->setIdUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWhishlist(Whishlist $whishlist): static
+    {
+        if ($this->whishlists->removeElement($whishlist)) {
+            // set the owning side to null (unless already changed)
+            if ($whishlist->getIdUser() === $this) {
+                $whishlist->setIdUser(null);
             }
         }
 
