@@ -16,19 +16,28 @@ class UserController extends AbstractController
     #[Route('/api/users', name: 'api_users', methods: ['GET'])]
     public function index(UserRepository $userRepository): JsonResponse
     {
-
         try {
             $user = $this->getUser();
             $userRoles = $user->getRoles();
-
+    
             if (!in_array("ROLE_ADMIN", $userRoles)) {
                 return $this->json(["message" => "Accès refusé"], 403);
             }
-
+    
             $users = $userRepository->findAll();
             $data = [];
-
+    
             foreach ($users as $user) {
+                $userComplements = [];
+                foreach ($user->getUserComplements() as $complement) {
+                    $userComplements[] = [
+                        "id" => $complement->getId(),
+                        "zipcode"=>$complement->getZipCode(),
+                        "adresse"=>$complement->getSexe(),
+                        "phone"=>$complement->getPhone()
+                    ];
+                }
+    
                 $data[] = [
                     "id" => $user->getId(),
                     "email" => $user->getEmail(),
@@ -40,15 +49,16 @@ class UserController extends AbstractController
                     "created_at" => $user->getCreatedAt(),
                     "updated_at" => $user->getUpdatedAt(),
                     "is_actif" => $user->isActif(),
+                    "user_complements" => $userComplements,
                 ];
             }
         } catch (\Throwable $th) {
-            return $this->json(['message' => "Erreur est survenue"], 500);
+            return $this->json(['message' => "Une erreur est survenue"], 500);
         }
-
-
+    
         return $this->json(["data" => $data]);
     }
+    
 
     #[Route('/api/users/{id}', name: 'api_user_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(int $id, UserRepository $userRepository): JsonResponse
@@ -79,6 +89,20 @@ class UserController extends AbstractController
                 "created_at" => $searchedUser->getCreatedAt(),
                 "updated_at" => $searchedUser->getUpdatedAt(),
             ];
+
+            $userComplements = [];
+            foreach ($searchedUser->getUserComplements() as $complement) {
+                $userComplements[] = [
+                    "id" => $complement->getId(),
+                    "zipcode" => $complement->getZipCode(),
+                    "adresse" => $complement->getAdresse(),
+                    "phone" => $complement->getPhone()
+                ];
+            }
+    
+            $data["user_complements"] = $userComplements;
+           
+
         } catch (\Throwable $th) {
             return $this->json(['message' => "Erreur est survenue"], 500);
         }
@@ -89,18 +113,20 @@ class UserController extends AbstractController
     #[Route("/api/users/me", name: "api_user_show_me", methods: ["GET"])]
     public function showMe(UserRepository $userRepository): JsonResponse
     {
-
         try {
             $user = $this->getUser();
-
-            if ($user instanceof USER) {
-                $userId = $user->getId();
-            } else {
-                return $this->json(['message' => "Erreur est survenue"], 404);
+    
+            if (!$user instanceof User) {
+                return $this->json(['message' => "Utilisateur non trouvé"], 404);
             }
+    
+            $userId = $user->getId();
             $userInfo = $userRepository->find($userId);
-
-
+    
+            if (!$userInfo) {
+                return $this->json(['message' => "Utilisateur non trouvé"], 404);
+            }
+    
             $data = [
                 "id" => $userInfo->getId(),
                 "email" => $userInfo->getEmail(),
@@ -112,13 +138,25 @@ class UserController extends AbstractController
                 "created_at" => $userInfo->getCreatedAt(),
                 "updated_at" => $userInfo->getUpdatedAt(),
             ];
+    
+            $userComplements = [];
+            foreach ($userInfo->getUserComplements() as $complement) {
+                $userComplements[] = [
+                    "id" => $complement->getId(),
+                    "zipcode" => $complement->getZipCode(),
+                    "adresse" => $complement->getAdresse(),
+                    "phone" => $complement->getPhone()
+                ];
+            }
+    
+            $data["user_complements"] = $userComplements;
         } catch (\Throwable $th) {
-            return $this->json(['message' => "Erreur est survenue"], 500);
+            return $this->json(['message' => "Une erreur est survenue"], 500);
         }
-
-
+    
         return $this->json(["data" => $data]);
     }
+    
 
     #[Route("/api/users/{id}", name: "api_user_update", methods: ["PATCH"], requirements: ['id' => '\d+'])]
     public function update(int $id, Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse
