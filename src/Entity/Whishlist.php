@@ -21,13 +21,11 @@ class Whishlist
     private array $idProducts = [];
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $order_date = null;
+    private ?\DateTimeImmutable $date_start = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $reception_date = null;
+    private ?\DateTimeImmutable $date_modification = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $status = null;
 
     public function getId(): ?int
     {
@@ -58,38 +56,26 @@ class Whishlist
         return $this;
     }
 
-    public function getOrderDate(): ?\DateTimeImmutable
+    public function getDateStart(): ?\DateTimeImmutable
     {
-        return $this->order_date;
+        return $this->date_start;
     }
 
-    public function setOrderDate(\DateTimeImmutable $order_date): static
+    public function setDateStart(\DateTimeImmutable $date_start): static
     {
-        $this->order_date = $order_date;
+        $this->date_start = $date_start;
 
         return $this;
     }
 
-    public function getReceptionDate(): ?\DateTimeImmutable
+    public function getDateModification(): ?\DateTimeImmutable
     {
-        return $this->reception_date;
+        return $this->date_modification;
     }
 
-    public function setReceptionDate(?\DateTimeImmutable $reception_date): static
+    public function setDateModification(?\DateTimeImmutable $date_modification): static
     {
-        $this->reception_date = $reception_date;
-
-        return $this;
-    }
-
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
+        $this->date_modification = $date_modification;
 
         return $this;
     }

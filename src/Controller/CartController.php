@@ -17,8 +17,16 @@ class CartController extends AbstractController
     public function show_all(CartRepository $cartRepository): JsonResponse
     {
         try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+    
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
             $carts = $cartRepository->findAll();
             $data = [];
+
 
             foreach ($carts as $cart) {
                 $data[] = [
@@ -39,7 +47,18 @@ class CartController extends AbstractController
     public function show(int $id, CartRepository $cartRepository): JsonResponse
     {
         try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+    
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+            
             $cart = $cartRepository->find($id);
+            
+            if (!$cart) {
+                return $this->json(["message" => "Aucune cart trouvée"], 400);
+            }
 
             $data = [
                 "id" => $cart->getId(),
@@ -54,7 +73,7 @@ class CartController extends AbstractController
         return $this->json(["message" => $data]);
     }
 
-    #[Route('/api/carts/me', name: 'app_show_cart', methods: ["GET"],  requirements: ['id' => '\d+'])]
+    #[Route('/api/carts/me', name: 'app_show_my_cart', methods: ["GET"],  requirements: ['id' => '\d+'])]
     public function show_user_cart(CartRepository $cartRepository): JsonResponse
     {
         try {

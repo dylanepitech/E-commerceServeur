@@ -26,7 +26,7 @@ class Order
     #[ORM\Column]
     private ?\DateTimeImmutable $order_date = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable:true)]
     private ?\DateTimeImmutable $reception_date = null;
 
     #[ORM\Column(length: 255)]
