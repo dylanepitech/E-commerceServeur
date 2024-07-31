@@ -19,6 +19,12 @@ class UserCompletmentsController extends AbstractController
     {
         try {
 
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+            
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
             $userComplements = $repository->findByUserId($userId);
 
             if (!$userComplements) {
@@ -146,6 +152,10 @@ class UserCompletmentsController extends AbstractController
             } else {
                 return $this->json(["message" => "Utilisateur inconnu"], 401);
             } 
+
+            if($user_id != $userId){
+                return $this->json(["message" => "Acces refusé"], 403);
+            }
 
             $entityManager->remove($userComplements);
             $entityManager->flush();

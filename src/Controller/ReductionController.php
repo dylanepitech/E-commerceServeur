@@ -38,7 +38,7 @@ class ReductionController extends AbstractController
             $entityManager->persist($reduction);
             $entityManager->flush();
 
-            return $this->json(["message" => "Reduction cree", "reduction" => $reduction], 201);
+            return $this->json(["message" => "Reduction cree"], 201);
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue"], 500);
         }

@@ -127,7 +127,7 @@ class OrderController extends AbstractController
 
             $cart = $cartRepository->find($idCart);
 
-            if (!$idCart) {
+            if (!$cart) {
                 return $this->json(["message" => "Aucun panier trouve"], 404);
             }
 
