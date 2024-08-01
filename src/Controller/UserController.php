@@ -295,10 +295,12 @@ class UserController extends AbstractController
                 return $this->json(["message" => "Tous les champs sont requis"], 400);
             }
 
-            $email_exist = $userRepository->findByEmail($email);
+            $email_exist = $userRepository->findOneBy(["email"=>$email]);
 
             if ($email_exist) {
                 return $this->json(["message" => "Email deja pris"], 400);
+            }else{
+                
             }
 
             $user = new User();

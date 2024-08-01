@@ -28,6 +28,7 @@ class WhishlistController extends AbstractController
                 }
             }
             $whishlists = $whishlistRepository->findAll();
+
             $data = [];
 
             foreach ($whishlists as $whishlist) {
@@ -51,6 +52,10 @@ class WhishlistController extends AbstractController
 
         try {
             $whishlist = $whishlistRepository->find($id);
+
+            if(!$whishlist){
+                return $this->json(["message"=>"Aucune whishlist trouvée"]);
+            }
 
             $data = [
                 "id" => $whishlist->getId(),
@@ -92,7 +97,7 @@ class WhishlistController extends AbstractController
         }
 
 
-        return $this->json(["message" => $data]);
+        return $this->json(["message" => "Whishlist crée"]);
     }
 
     #[Route('/api/whishlist/{id}', name: 'app_update_whishlist', methods: ["PATCH"], requirements: ['id' => '\d+'])]
