@@ -16,7 +16,7 @@ class Products
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
-    private ?categories $categories = null;
+    private ?Categories $categories = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
@@ -45,13 +45,13 @@ class Products
     /**
      * @var Collection<int, ProductsComments>
      */
-    #[ORM\OneToMany(targetEntity: ProductsComments::class, mappedBy: 'idProducts')]
+    #[ORM\OneToMany(mappedBy: 'idProducts', targetEntity: ProductsComments::class)]
     private Collection $productsComments;
 
     /**
      * @var Collection<int, Notation>
      */
-    #[ORM\OneToMany(targetEntity: Notation::class, mappedBy: 'idProducts')]
+    #[ORM\OneToMany(mappedBy: 'idProducts', targetEntity: Notation::class)]
     private Collection $notations;
 
     public function __construct()
@@ -65,12 +65,12 @@ class Products
         return $this->id;
     }
 
-    public function getCategories(): ?categories
+    public function getCategories(): ?Categories
     {
         return $this->categories;
     }
 
-    public function setCategories(?categories $categories): static
+    public function setCategories(?Categories $categories): static
     {
         $this->categories = $categories;
 
