@@ -5,6 +5,9 @@
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
+/public/*.png
+/public/*.webp
+
 /var/
 /vendor/
 /migrations/*
