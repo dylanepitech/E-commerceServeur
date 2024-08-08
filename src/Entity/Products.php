@@ -16,7 +16,7 @@ class Products
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'products')]
-    private ?categories $categories = null;
+    private ?Categories $categories = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
