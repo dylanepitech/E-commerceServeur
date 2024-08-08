@@ -1,17 +1,19 @@
 <?php
 
-namespace App\EventListener;
+namespace App\Service;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 
-class JWTCreatedListener
+class JWTModifier
 {
     public function onJWTCreated(JWTCreatedEvent $event)
     {
         $payload = $event->getData();
         $user = $event->getUser();
 
-        $payload['test'] = "je suis un test";
+        $payload['firstname'] = $user->getFirstname();
+        $payload['Lastname'] = $user->getLastname();
+        $payload['userId'] = $user->getId();
 
         $event->setData($payload);
     }

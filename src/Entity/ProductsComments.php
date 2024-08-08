@@ -14,7 +14,8 @@ class ProductsComments
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'productsComments')]
-    private ?Products $idProducts = null; 
+    private ?Products $idProducts = null;
+
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 

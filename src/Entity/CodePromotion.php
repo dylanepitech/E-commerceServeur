@@ -14,7 +14,7 @@ class CodePromotion
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'codePromotions')]
-    private ?user $userId = null;
+    private ?User $userId = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $code = null;
