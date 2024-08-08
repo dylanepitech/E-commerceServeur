@@ -21,7 +21,7 @@ class RegisterController extends AbstractController
     }
 
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): JsonResponse
+    public function register(Request $request, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): JsonResponse
     {
 
         try {
@@ -31,6 +31,12 @@ class RegisterController extends AbstractController
 
             if (empty($data['email']) || empty($data['password']) || empty($data['firstname']) || empty($data['lastname'])) {
                 return $this->json(['message' => 'Tous les champs sont requis'], 403);
+            }
+
+            $emailExist = $userRepository->findOneBy(["email" => $data['email']]);
+
+            if ($emailExist) {
+                return $this->json(['message' => 'Email deja pris veuillez vous connecter'], 403);
             }
 
             $user = new User();
