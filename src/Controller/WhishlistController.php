@@ -46,6 +46,36 @@ class WhishlistController extends AbstractController
         return $this->json(["data" => $data]);
     }
 
+    #[Route('/api/whishlist/me', name: 'app_show_my_whishlist', methods: ["GET"], requirements: ['id' => '\d+'])]
+    public function show_me(WhishlistRepository $whishlistRepository): JsonResponse
+    {
+
+        try {
+            $user = $this->getUser();
+
+            if ($user instanceof User) {
+
+                $id = $user->getId();
+            }
+
+            $whishlist = $whishlistRepository->findOneBy(["idUser" => $id]);
+
+            if (!$whishlist) {
+                return $this->json(["message" => "Aucune whishlist trouvée"], 404);
+            }
+
+            $data = [
+                "id" => $whishlist->getId(),
+                "id_products" => $whishlist->getIdProducts(),
+                "date_start" => $whishlist->getDateStart(),
+                "date_modification" => $whishlist->getDateModification()
+            ];
+        } catch (\Throwable $th) {
+            return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
+        }
+        return $this->json(["data" => $data]);
+    }
+
     #[Route('/api/whishlist/{id}', name: 'app_show_whishlist', methods: ["GET"], requirements: ['id' => '\d+'])]
     public function show(int $id, WhishlistRepository $whishlistRepository): JsonResponse
     {
@@ -53,8 +83,8 @@ class WhishlistController extends AbstractController
         try {
             $whishlist = $whishlistRepository->find($id);
 
-            if(!$whishlist){
-                return $this->json(["message"=>"Aucune whishlist trouvée"]);
+            if (!$whishlist) {
+                return $this->json(["message" => "Aucune whishlist trouvée"]);
             }
 
             $data = [
@@ -114,7 +144,7 @@ class WhishlistController extends AbstractController
             $user = $this->getUser();
 
             if ($user instanceof User) {
-
+                $userId =$user->getId();
                 if ($whishlist->getIdUser()->getId() != $user->getId()) {
                     return $this->json(["message" => "Acces refusé"], 403);
                 }
@@ -125,17 +155,31 @@ class WhishlistController extends AbstractController
 
             $products = $data["idProducts"] ?? null;
 
-            if (!$products) {
-                return $this->json(["message" => "Veuillez ajouter des produits"]);
-            }
+            // if (!$products) {
+            //     return $this->json(["message" => "Veuillez ajouter des produits"]);
+            // }
 
             $whishlist->setIdProducts($products);
             $entityManager->flush();
+
+           
+            $whishlist = $whishlistRepository->findOneBy(["idUser" => $userId]);
+
+            if (!$whishlist) {
+                return $this->json(["message" => "Aucune whishlist trouvée"], 404);
+            }
+
+            $data = [
+                "id" => $whishlist->getId(),
+                "id_products" => $whishlist->getIdProducts(),
+                "date_start" => $whishlist->getDateStart(),
+                "date_modification" => $whishlist->getDateModification()
+            ];
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
         }
 
-        return $this->json(["message" => "Whislist mis a jour"]);
+        return $this->json(["data" => $data]);
     }
 
     #[Route('/api/whishlist/{id}', name: 'app_delete_whishlist', methods: ["DELETE"], requirements: ['id' => '\d+'])]
