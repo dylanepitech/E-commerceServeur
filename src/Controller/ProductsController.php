@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\CategoriesRepository;
 use App\Repository\ProductsRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ProductsController extends AbstractController
@@ -77,16 +78,16 @@ class ProductsController extends AbstractController
     #[Route('/api/get-products', name: 'app_get_all_product', methods: ['GET'])]
     public function getAllProduct()
     {
-        
+
         $allProducts = $this->products->findAll();
 
         $productJSON = [];
 
         foreach ($allProducts as $product) {
-            
+
             $category = $product->getCategories();
 
-            
+
             $productJSON[] = [
                 "id" => $product->getId(),
                 "categoryId" => $category ? $category->getId() : null,
@@ -100,9 +101,50 @@ class ProductsController extends AbstractController
             ];
         }
 
-        
+
         $productJSON[] = ["total_products" => count($productJSON)];
 
         return $this->json($productJSON, 200);
+    }
+
+    #[Route('/api/get-topfive', name: 'app_get_topfive', methods: ["GET"])]
+    public function getTopFIve(): JsonResponse
+    {
+
+        $topFive = [1,2, 3, 4, 5, 6];
+
+
+        $categories = $this->categoriesRepository->findBy(['id' => $topFive]);
+
+        $productJSON = [];
+
+
+        foreach ($categories as $category) {
+           
+            $product = $this->products->findOneBy(['categories' => $category], ['id' => 'ASC']);
+
+           
+            if ($product) {
+               
+                $images = $product->getImages();
+                $firstImage = null;
+
+                if (!empty($images)) {
+                    
+                    $firstImageKey = array_key_first($images);
+                    
+                    $firstImage = $images[$firstImageKey][0]['image'] ?? null;
+                }
+
+                $productJSON[] = [
+                    "title" => $category->getTitle(),
+                    "image" => $firstImage,
+                ];
+            }
+        }
+
+
+
+        return $this->json(["data" => $productJSON]);
     }
 }
