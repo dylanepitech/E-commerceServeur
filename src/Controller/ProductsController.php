@@ -111,7 +111,7 @@ class ProductsController extends AbstractController
     public function getTopFIve(): JsonResponse
     {
 
-        $topFive = [1,2, 3, 4, 5, 6];
+        $topFive = [1, 2, 3, 4, 5, 6];
 
 
         $categories = $this->categoriesRepository->findBy(['id' => $topFive]);
