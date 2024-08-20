@@ -14,25 +14,24 @@ class ProductsComments
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'productsComments')]
-    private ?products $idProducts = null;
+    private ?Products $idProducts = null;
 
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'productsComments')]
-    private ?user $idUser = null;
-
+    private ?User $idUser = null;
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getIdProducts(): ?products
+    public function getIdProducts(): ?Products
     {
         return $this->idProducts;
     }
 
-    public function setIdProducts(?products $idProducts): static
+    public function setIdProducts(?Products $idProducts): static
     {
         $this->idProducts = $idProducts;
 
@@ -51,12 +50,12 @@ class ProductsComments
         return $this;
     }
 
-    public function getIdUser(): ?user
+    public function getIdUser(): ?User 
     {
         return $this->idUser;
     }
 
-    public function setIdUser(?user $idUser): static
+    public function setIdUser(?User $idUser): static 
     {
         $this->idUser = $idUser;
 

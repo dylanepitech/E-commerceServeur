@@ -116,7 +116,6 @@ class OrderController extends AbstractController
 
             $data = json_decode($request->getContent(), true);
 
-
             $idCart = $data['idCart'] ?? null;
 
             $order = new Order();
@@ -138,11 +137,17 @@ class OrderController extends AbstractController
 
             $entityManager->persist($order);
             $entityManager->flush();
+
+           
+            $entityManager->remove($cart);
+            $entityManager->flush();
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
         }
+
         return $this->json(["message" => "Commande reussie"]);
     }
+
 
     #[Route('/api/order/{id}', name: 'app_delete_order', methods: ["DELETE"], requirements: ['id' => '\d+'])]
     public function delete(int $id, OrderRepository $orderRepository, EntityManagerInterface $entityManager): JsonResponse
@@ -154,7 +159,7 @@ class OrderController extends AbstractController
             if (!$order) {
                 return $this->json(["message" => "Aucune commande trouvee"]);
             }
-            
+
             $user = $this->getUser();
             $userRoles = $user->getRoles();
 

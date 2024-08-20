@@ -88,7 +88,7 @@ class CartController extends AbstractController
             $cart = $cartRepository->findByUserCart($userId);
 
             if (!$cart) {
-                return $this->json(["message" => "Aucune cart trouvée"], 400);
+                return $this->json(["message" => "Aucune cart trouvée"], 404);
             }
 
             $data = [
@@ -102,7 +102,7 @@ class CartController extends AbstractController
             return $this->json(["message" => "Une erreur est survenue"], 500);
         }
 
-        return $this->json(["message" => $data]);
+        return $this->json(["data" => $data]);
     }
 
     #[Route('/api/carts', name: 'app_create_cart', methods: ["POST"])]
@@ -196,21 +196,27 @@ class CartController extends AbstractController
 
             $products = $data["idProducts"] ?? null;
 
-
-            if (!$products) {
-                return $this->json(["message" => "Veuillez ajouter des produits"]);
-            }
-
-            if ($products == $cart->getIdProducts()) {
-                return $this->json(["message" => "Panier deja existant"]);
-            }
+       
 
             $cart->setIdProducts($products);
             $entityManager->flush();
+
+            $cart = $cartRepository->findByUserCart($user_id);
+
+            if (!$cart) {
+                return $this->json(["message" => "Aucune cart trouvée"], 404);
+            }
+
+            $data = [
+                "id" => $cart->getId(),
+                "id_user" => $cart->getIdUser(),
+                "id_products" => $cart->getIdProducts(),
+                "date_start" => $cart->getDateStart()
+            ];
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue"], 500);
         }
 
-        return $this->json(["message" => "Panier mis a jour", "products" => $products, "cart" => $cart->getIdProducts()]);
+        return $this->json(["data" => $data]);
     }
 }

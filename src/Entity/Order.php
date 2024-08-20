@@ -26,7 +26,7 @@ class Order
     #[ORM\Column]
     private ?\DateTimeImmutable $order_date = null;
 
-    #[ORM\Column(nullable:true)]
+    #[ORM\Column]
     private ?\DateTimeImmutable $reception_date = null;
 
     #[ORM\Column(length: 255)]
@@ -97,3 +97,5 @@ class Order
         return $this;
     }
 }
+
+
