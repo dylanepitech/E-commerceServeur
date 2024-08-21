@@ -107,6 +107,7 @@ class ProductsController extends AbstractController
         return $this->json($productJSON, 200);
     }
 
+
     #[Route('/api/get-topfive', name: 'app_get_topfive', methods: ["GET"])]
     public function getTopFIve(): JsonResponse
     {
@@ -120,19 +121,19 @@ class ProductsController extends AbstractController
 
 
         foreach ($categories as $category) {
-           
+
             $product = $this->products->findOneBy(['categories' => $category], ['id' => 'ASC']);
 
-           
+
             if ($product) {
-               
+
                 $images = $product->getImages();
                 $firstImage = null;
 
                 if (!empty($images)) {
-                    
+
                     $firstImageKey = array_key_first($images);
-                    
+
                     $firstImage = $images[$firstImageKey][0]['image'] ?? null;
                 }
 
@@ -146,5 +147,92 @@ class ProductsController extends AbstractController
 
 
         return $this->json(["data" => $productJSON]);
+    }
+
+
+    #[Route('/api/get-gem-products', name: 'app_get_gem_product', methods: ['GET'])]
+    public function getGemProduct()
+    {
+        $gem = [3, 7, 10, 11, 14, 21];
+        $categories = $this->categoriesRepository->findBy(['id' => $gem]);
+
+        $productJSON = [];
+        $cat = [];
+
+        foreach ($categories as $category) {
+            $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
+            foreach ($products as $product) {
+                $productJSON[] = [
+                    "id" => $product->getId(),
+                    "categoryId" => $category->getId(),
+                    "categoryTitle" => $category->getTitle(),
+                    "title" => $product->getTitle(),
+                    "description" => $product->getDescription(),
+                    "price" => $product->getPrice(),
+                    "weight" => $product->getWeight(),
+                    "images" => $product->getImages(),
+                    "sizes" => $product->getSizes()
+                ];
+            }
+        }
+
+        return $this->json($productJSON, 200);
+    }
+    #[Route('/api/get-pem-products', name: 'app_get_pem_product', methods: ['GET'])]
+    public function getPemProduct()
+    {
+        $gem = [2,5,6,8,9];
+        $categories = $this->categoriesRepository->findBy(['id' => $gem]);
+
+        $productJSON = [];
+        $cat = [];
+
+        foreach ($categories as $category) {
+            $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
+            foreach ($products as $product) {
+                $productJSON[] = [
+                    "id" => $product->getId(),
+                    "categoryId" => $category->getId(),
+                    "categoryTitle" => $category->getTitle(),
+                    "title" => $product->getTitle(),
+                    "description" => $product->getDescription(),
+                    "price" => $product->getPrice(),
+                    "weight" => $product->getWeight(),
+                    "images" => $product->getImages(),
+                    "sizes" => $product->getSizes()
+                ];
+            }
+        }
+
+        return $this->json($productJSON, 200);
+    }
+
+    #[Route('/api/get-cuisine-products', name: 'app_get_cuisine_product', methods: ['GET'])]
+    public function getCuisineProduct()
+    {
+        $gem = [1,2,6,5,7,10,13,15,16,17,18,19,20];
+        $categories = $this->categoriesRepository->findBy(['id' => $gem]);
+
+        $productJSON = [];
+        $cat = [];
+
+        foreach ($categories as $category) {
+            $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
+            foreach ($products as $product) {
+                $productJSON[] = [
+                    "id" => $product->getId(),
+                    "categoryId" => $category->getId(),
+                    "categoryTitle" => $category->getTitle(),
+                    "title" => $product->getTitle(),
+                    "description" => $product->getDescription(),
+                    "price" => $product->getPrice(),
+                    "weight" => $product->getWeight(),
+                    "images" => $product->getImages(),
+                    "sizes" => $product->getSizes()
+                ];
+            }
+        }
+
+        return $this->json($productJSON, 200);
     }
 }
