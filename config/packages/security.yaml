@@ -44,6 +44,9 @@ security:
         - { path: ^/api/get-category, roles: PUBLIC_ACCESS }
         - { path: ^/api/get-product, roles: PUBLIC_ACCESS }
         - { path: ^/api/get-topfive, roles: PUBLIC_ACCESS }
+        - { path: ^/api/get-gem-products, roles: PUBLIC_ACCESS }
+        - { path: ^/api/get-pem-products, roles: PUBLIC_ACCESS }
+        - { path: ^/api/get-cuisine-products, roles: PUBLIC_ACCESS }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
