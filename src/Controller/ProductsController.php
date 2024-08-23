@@ -97,7 +97,8 @@ class ProductsController extends AbstractController
                 "price" => $product->getPrice(),
                 "weight" => $product->getWeight(),
                 "images" => $product->getImages(),
-                "sizes" => $product->getSizes()
+                "sizes" => $product->getSizes(),
+                "reduction" => $product->getReduction(),
             ];
         }
 
@@ -171,7 +172,8 @@ class ProductsController extends AbstractController
                     "price" => $product->getPrice(),
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
-                    "sizes" => $product->getSizes()
+                    "sizes" => $product->getSizes(),
+                    "reduction" => $product->getReduction(),
                 ];
             }
         }
@@ -181,7 +183,7 @@ class ProductsController extends AbstractController
     #[Route('/api/get-pem-products', name: 'app_get_pem_product', methods: ['GET'])]
     public function getPemProduct()
     {
-        $gem = [2,5,6,8,9];
+        $gem = [2, 5, 6, 8, 9];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
         $productJSON = [];
@@ -199,7 +201,8 @@ class ProductsController extends AbstractController
                     "price" => $product->getPrice(),
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
-                    "sizes" => $product->getSizes()
+                    "sizes" => $product->getSizes(),
+                    "reduction" => $product->getReduction(),
                 ];
             }
         }
@@ -210,7 +213,7 @@ class ProductsController extends AbstractController
     #[Route('/api/get-cuisine-products', name: 'app_get_cuisine_product', methods: ['GET'])]
     public function getCuisineProduct()
     {
-        $gem = [1,2,6,5,7,10,13,15,16,17,18,19,20];
+        $gem = [1, 2, 6, 5, 7, 10, 13, 15, 16, 17, 18, 19, 20];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
         $productJSON = [];
@@ -228,7 +231,8 @@ class ProductsController extends AbstractController
                     "price" => $product->getPrice(),
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
-                    "sizes" => $product->getSizes()
+                    "sizes" => $product->getSizes(),
+                    "reduction" => $product->getReduction(),
                 ];
             }
         }
