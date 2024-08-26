@@ -50,7 +50,7 @@ class CodepromoController extends AbstractController
             $entityManager->persist($codePromo);
             $entityManager->flush();
 
-            return new JsonResponse(['message' => ['Code promo created successfully',"success"]], 201);
+            return new JsonResponse(['message' => ['Code promo cree',"succes"]], 201);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => 'An error occurred: ' . $e->getMessage()], 500);
         }
