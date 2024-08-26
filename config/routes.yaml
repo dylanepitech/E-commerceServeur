@@ -6,3 +6,8 @@ controllers:
     
 api_login_check:
     path: /api/login_check
+
+payment_intent:
+    path: /api/payment-intent
+    controller: App\Controller\PaymentController::createPaymentIntent
+    methods: POST
