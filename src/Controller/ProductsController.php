@@ -154,7 +154,7 @@ class ProductsController extends AbstractController
     #[Route('/api/get-gem-products', name: 'app_get_gem_product', methods: ['GET'])]
     public function getGemProduct()
     {
-        $gem = [3, 7, 10, 11, 14, 21];
+        $gem = [3, 4, 7, 10, 11, 14, 19, 21, 23];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
         $productJSON = [];
