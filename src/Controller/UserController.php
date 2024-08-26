@@ -18,27 +18,80 @@ class UserController extends AbstractController
     {
         try {
             $user = $this->getUser();
+    
+            if (!$user || !in_array("ROLE_ADMIN", $user->getRoles())) {
+                return $this->json(['message' => "Accès refusé"], 403);
+            }
+    
+            $users = $userRepository->findAll();
+            $data = [];
+    
+            foreach ($users as $userInfo) {
+                $codePromos = $userInfo->getCodePromotions();
+                $codePromoData = [];
+    
+                foreach ($codePromos as $codePromo) {
+                    $codePromoData[] = [
+                        "id" => $codePromo->getId(),
+                        "code" => $codePromo->getCode(),
+                        "value" => $codePromo->getValue(),
+                        "created_at" => $codePromo->getCreatedAt()->format('Y-m-d H:i:s'),
+                        "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
+                    ];
+                }
+    
+                $userData = [
+                    "id" => $userInfo->getId(),
+                    "email" => $userInfo->getEmail(),
+                    "roles" => $userInfo->getRoles(),
+                    "firstname" => $userInfo->getFirstname(),
+                    "lastname" => $userInfo->getLastname(),
+                    "picture" => $userInfo->getPicture(),
+                    "verified" => $userInfo->isVerified(),
+                    "is_actif" => $userInfo->isActif(),
+                    "created_at" => $userInfo->getCreatedAt(),
+                    "updated_at" => $userInfo->getUpdatedAt(),
+                    "code_promo" => $codePromoData
+                ];
+    
+                $userComplements = [];
+                foreach ($userInfo->getUserComplements() as $complement) {
+                    $userComplements[] = [
+                        "id" => $complement->getId(),
+                        "zipcode" => $complement->getZipCode(),
+                        "adresse" => $complement->getAdresse(),
+                        "phone" => $complement->getPhone()
+                    ];
+                }
+    
+                $userData["user_complements"] = $userComplements;
+    
+                $data[] = $userData;
+            }
+        } catch (\Throwable $th) {
+            return $this->json(['message' => "Une erreur est survenue"], 500);
+        }
+    
+        return $this->json(["data" => $data]);
+    }
+
+
+    #[Route('/api/users/{id}', name: 'api_user_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function show(int $id, UserRepository $userRepository): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
             $userRoles = $user->getRoles();
     
             if (!in_array("ROLE_ADMIN", $userRoles)) {
                 return $this->json(["message" => "Accès refusé"], 403);
             }
     
-            $users = $userRepository->findAll();
+            $users = $userRepository->find($id);
             $data = [];
     
             foreach ($users as $user) {
-                $userComplements = [];
-                foreach ($user->getUserComplements() as $complement) {
-                    $userComplements[] = [
-                        "id" => $complement->getId(),
-                        "zipcode"=>$complement->getZipCode(),
-                        "adresse"=>$complement->getSexe(),
-                        "phone"=>$complement->getPhone()
-                    ];
-                }
-    
-                $data[] = [
+                $userData = [
                     "id" => $user->getId(),
                     "email" => $user->getEmail(),
                     "roles" => $user->getRoles(),
@@ -48,65 +101,42 @@ class UserController extends AbstractController
                     "verified" => $user->isVerified(),
                     "created_at" => $user->getCreatedAt(),
                     "updated_at" => $user->getUpdatedAt(),
-                    "is_actif" => $user->isActif(),
-                    "user_complements" => $userComplements,
                 ];
+    
+               
+                $codePromotions = [];
+                foreach ($user->getCodePromotions() as $codePromo) {
+                    $codePromotions[] = [
+                        "id" => $codePromo->getId(),
+                        "code" => $codePromo->getCode(),
+                        "value" => $codePromo->getValue(),
+                        "created_at" => $codePromo->getCreatedAt()->format('Y-m-d H:i:s'),
+                        "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
+                    ];
+                }
+    
+                $userData["code_promo"] = $codePromotions;
+    
+                
+                $userComplements = [];
+                foreach ($user->getUserComplements() as $complement) {
+                    $userComplements[] = [
+                        "id" => $complement->getId(),
+                        "zipcode" => $complement->getZipCode(),
+                        "adresse" => $complement->getAdresse(),
+                        "phone" => $complement->getPhone()
+                    ];
+                }
+    
+                $userData["user_complements"] = $userComplements;
+    
+                $data[] = $userData;
             }
+    
         } catch (\Throwable $th) {
             return $this->json(['message' => "Une erreur est survenue"], 500);
         }
     
-        return $this->json(["data" => $data]);
-    }
-    
-
-    #[Route('/api/users/{id}', name: 'api_user_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(int $id, UserRepository $userRepository): JsonResponse
-    {
-        try {
-
-            $user = $this->getUser();
-            $userRoles = $user->getRoles();
-
-            if (!in_array("ROLE_ADMIN", $userRoles)) {
-                return $this->json(["message" => "Accès refusé"], 403);
-            }
-
-            $searchedUser = $userRepository->find($id);
-
-            if (!$searchedUser) {
-                return $this->json(["message" => "Aucun utilisateur trouvé"], 404);
-            }
-
-            $data = [
-                "id" => $searchedUser->getId(),
-                "email" => $searchedUser->getEmail(),
-                "roles" => $searchedUser->getRoles(),
-                "firstname" => $searchedUser->getFirstname(),
-                "lastname" => $searchedUser->getLastname(),
-                "picture" => $searchedUser->getPicture(),
-                "verified" => $searchedUser->isVerified(),
-                "created_at" => $searchedUser->getCreatedAt(),
-                "updated_at" => $searchedUser->getUpdatedAt(),
-            ];
-
-            $userComplements = [];
-            foreach ($searchedUser->getUserComplements() as $complement) {
-                $userComplements[] = [
-                    "id" => $complement->getId(),
-                    "zipcode" => $complement->getZipCode(),
-                    "adresse" => $complement->getAdresse(),
-                    "phone" => $complement->getPhone()
-                ];
-            }
-    
-            $data["user_complements"] = $userComplements;
-           
-
-        } catch (\Throwable $th) {
-            return $this->json(['message' => "Erreur est survenue"], 500);
-        }
-
         return $this->json(["data" => $data]);
     }
 
@@ -115,18 +145,31 @@ class UserController extends AbstractController
     {
         try {
             $user = $this->getUser();
-    
+
             if (!$user instanceof User) {
                 return $this->json(['message' => "Utilisateur non trouvé"], 404);
             }
-    
+
             $userId = $user->getId();
             $userInfo = $userRepository->find($userId);
-    
+
             if (!$userInfo) {
                 return $this->json(['message' => "Utilisateur non trouvé"], 404);
             }
-    
+
+            $codePromos = $userInfo->getCodePromotions();
+            $codePromoData = [];
+
+            foreach ($codePromos as $codePromo) {
+                $codePromoData[] = [
+                    "id" => $codePromo->getId(),
+                    "code" => $codePromo->getCode(),
+                    "value" => $codePromo->getValue(),
+                    "created_at" => $codePromo->getCreatedAt()->format('Y-m-d H:i:s'),
+                    "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
+                ];
+            }
+
             $data = [
                 "id" => $userInfo->getId(),
                 "email" => $userInfo->getEmail(),
@@ -135,10 +178,11 @@ class UserController extends AbstractController
                 "lastname" => $userInfo->getLastname(),
                 "picture" => $userInfo->getPicture(),
                 "verified" => $userInfo->isVerified(),
-                "created_at" => $userInfo->getCreatedAt(),
-                "updated_at" => $userInfo->getUpdatedAt(),
+                "created_at" => $userInfo->getCreatedAt()->format('Y-m-d H:i:s'),
+                "updated_at" => $userInfo->getUpdatedAt()->format('Y-m-d H:i:s'),
+                "code_promo" => $codePromoData
             ];
-    
+
             $userComplements = [];
             foreach ($userInfo->getUserComplements() as $complement) {
                 $userComplements[] = [
@@ -148,15 +192,15 @@ class UserController extends AbstractController
                     "phone" => $complement->getPhone()
                 ];
             }
-    
+
             $data["user_complements"] = $userComplements;
         } catch (\Throwable $th) {
             return $this->json(['message' => "Une erreur est survenue"], 500);
         }
-    
+
         return $this->json(["data" => $data]);
     }
-    
+
 
     #[Route("/api/users/{id}", name: "api_user_update", methods: ["PATCH"], requirements: ['id' => '\d+'])]
     public function update(int $id, Request $request, EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordHasherInterface $passwordHasher): JsonResponse
@@ -295,12 +339,11 @@ class UserController extends AbstractController
                 return $this->json(["message" => "Tous les champs sont requis"], 400);
             }
 
-            $email_exist = $userRepository->findOneBy(["email"=>$email]);
+            $email_exist = $userRepository->findOneBy(["email" => $email]);
 
             if ($email_exist) {
                 return $this->json(["message" => "Email deja pris"], 400);
-            }else{
-                
+            } else {
             }
 
             $user = new User();
@@ -356,5 +399,67 @@ class UserController extends AbstractController
         } catch (\Throwable $th) {
             return $this->json(['message' => "Erreur est survenue"], 500);
         }
+    }
+
+
+    #[Route('/api/users/admin', name: 'api_all_admin', methods: ['GET'])]
+    public function getAdmin(UserRepository $userRepository): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
+
+            $users = $userRepository->findAdmins();
+            $data = [];
+
+            foreach ($users as $user) {
+                $userComplements = [];
+                foreach ($user->getUserComplements() as $complement) {
+                    $userComplements[] = [
+                        "id" => $complement->getId(),
+                        "zipcode" => $complement->getZipCode(),
+                        "adresse" => $complement->getSexe(),
+                        "phone" => $complement->getPhone()
+                    ];
+                }
+
+                $codePromos = $user->getCodePromotions();
+                $codePromoData = [];
+    
+                foreach ($codePromos as $codePromo) {
+                    $codePromoData[] = [
+                        "id" => $codePromo->getId(),
+                        "code" => $codePromo->getCode(),
+                        "value" => $codePromo->getValue(),
+                        "created_at" => $codePromo->getCreatedAt()->format('Y-m-d H:i:s'),
+                        "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
+                    ];
+                }
+
+                $data[] = [
+                    "id" => $user->getId(),
+                    "email" => $user->getEmail(),
+                    "roles" => $user->getRoles(),
+                    "firstname" => $user->getFirstname(),
+                    "lastname" => $user->getLastname(),
+                    "picture" => $user->getPicture(),
+                    "verified" => $user->isVerified(),
+                    "created_at" => $user->getCreatedAt(),
+                    "updated_at" => $user->getUpdatedAt(),
+                    "is_actif" => $user->isActif(),
+                    "user_complements" => $userComplements,
+                    "code_promo"=>$codePromoData,
+                ];
+            }
+        } catch (\Throwable $th) {
+            return $this->json(['message' => "Une erreur est survenue"], 500);
+        }
+
+        return $this->json(["data" => $data]);
     }
 }

@@ -54,7 +54,7 @@ class CartController extends AbstractController
                 return $this->json(["message" => "Accès refusé"], 403);
             }
             
-            $cart = $cartRepository->find($id);
+            $cart = $cartRepository->findOneBy(["idUser" => $id]);
             
             if (!$cart) {
                 return $this->json(["message" => "Aucune cart trouvée"], 400);
@@ -70,7 +70,7 @@ class CartController extends AbstractController
             return $this->json(["message" => "Une erreur est survenue"]);
         }
 
-        return $this->json(["message" => $data]);
+        return $this->json(["data" => $data]);
     }
 
     #[Route('/api/carts/me', name: 'app_show_my_cart', methods: ["GET"],  requirements: ['id' => '\d+'])]
