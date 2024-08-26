@@ -239,4 +239,33 @@ class ProductsController extends AbstractController
 
         return $this->json($productJSON, 200);
     }
+
+    #[Route('/api/get-products/promotion', name: "app_get_products_promotion", methods: ['GET'])]
+    public function getPromotion(ProductsRepository $productsRepository): JsonResponse
+    {
+
+        $products = $productsRepository->createQueryBuilder('p')
+            ->where('p.reduction IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+
+        $productJson = [];
+
+        foreach ($products as $key => $product) {
+            $productJson[] = [
+                "id" => $product->getId(),
+                "categoryId" => $product->getCategories(),
+                "categoryTitle" => "pem",
+                "title" => $product->getTitle(),
+                "description" => $product->getDescription(),
+                "price" => $product->getPrice(),
+                "weight" => $product->getWeight(),
+                "images" => $product->getImages(),
+                "sizes" => $product->getSizes(),
+                "reduction" => $product->getReduction(),
+            ];
+        }
+
+        return $this->json($productJson, 200);
+    }
 }
