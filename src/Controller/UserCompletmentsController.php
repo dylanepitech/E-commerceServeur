@@ -46,52 +46,60 @@ class UserCompletmentsController extends AbstractController
     }
 
     #[Route('/api/users/complements', name: 'app_create_user_completments', methods: ["POST"])]
-    public function create(EntityManagerInterface $entityManager, Request $request): JsonResponse
-    {
-
-        try {
-            $user = $this->getUser();
-
-            if ($user instanceof User) {
-                $userId = $user->getId();
-            } else {
-                return $this->json(['message' => "Aucun utilisateur trouvé"], 404);
-            }
-
-            $data = json_decode($request->getContent(), true);
-            $zipCode = $data['zip_code'] ?? null;
-            $adresse = $data['adresse'] ?? null;
-            $sexe = $data['sexe'] ?? null;
-            $phone = $data['phone'] ?? null;
-
-            $userComplements = new UserComplements();
-
-            if ($zipCode) {
-                $userComplements->setZipCode($zipCode);
-            }
-
-            if ($adresse) {
-                $userComplements->setAdresse($adresse);
-            }
-
-            if ($sexe) {
-                $userComplements->setSexe($sexe);
-            }
-
-            if ($phone) {
-                $userComplements->setPhone($phone);
-            }
-
-            $userComplements->setUserId($user);
-
-            $entityManager->persist($userComplements);
-            $entityManager->flush();
-        } catch (\Throwable $th) {
-            return $this->json(['message' => "Une erreur est survenue"], 500);
+public function create(EntityManagerInterface $entityManager, Request $request): JsonResponse
+{
+    try {
+        $user = $this->getUser();
+    
+        if ($user instanceof User) {
+            $userId = $user->getId();
+        } else {
+            return $this->json(['message' => "Aucun utilisateur trouvé"], 404);
         }
-
-        return $this->json(["message" => "Informations completées", "data" => $data]);
+    
+        $data = json_decode($request->getContent(), true);
+        $zipCode = $data['zip_code'] ?? null;
+        $adresse = $data['adresse'] ?? null;
+        $sexe = $data['sexe'] ?? null;
+        $phone = $data['phone'] ?? null;
+    
+        error_log("User ID: " . $userId);
+        error_log("Zip Code: " . $zipCode);
+        error_log("Adresse: " . $adresse);
+        error_log("Sexe: " . $sexe);
+        error_log("Phone: " . $phone);
+    
+        $userComplements = new UserComplements();
+    
+        if ($zipCode) {
+            $userComplements->setZipCode($zipCode);
+        }
+    
+        if ($adresse) {
+            $userComplements->setAdresse($adresse);
+        }
+    
+        if ($sexe) {
+            $userComplements->setSexe($sexe);
+        }
+    
+        if ($phone) {
+            $userComplements->setPhone($phone);
+        }
+    
+        $userComplements->setUserId($user);
+    
+        $entityManager->persist($userComplements);
+        $entityManager->flush();
+    
+        return $this->json(['message' => 'ca marche'], JsonResponse::HTTP_CREATED);
+    
+    } catch (\Throwable $th) {
+        error_log("Erreur capturée: " . $th->getMessage());
+        return $this->json(['message' => "Une erreur est survenue"], 500);
     }
+}
+      
 
     #[Route('/api/users/complements/{userId}', name: 'app_update_user_completments', methods: ["PATCH"])]
     public function update(int $userId, Request $request, UserComplementsRepository $repository, EntityManagerInterface $entityManager): JsonResponse
