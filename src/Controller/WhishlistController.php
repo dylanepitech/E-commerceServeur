@@ -80,8 +80,8 @@ class WhishlistController extends AbstractController
     public function show(int $id, WhishlistRepository $whishlistRepository): JsonResponse
     {
 
-        try {
-            $whishlist = $whishlistRepository->find($id);
+        // try {
+            $whishlist = $whishlistRepository->findOneBy(["idUser" => $id]);
 
             if (!$whishlist) {
                 return $this->json(["message" => "Aucune whishlist trouvée"]);
@@ -93,9 +93,9 @@ class WhishlistController extends AbstractController
                 "date_start" => $whishlist->getDateStart(),
                 "date_modification" => $whishlist->getDateModification()
             ];
-        } catch (\Throwable $th) {
-            return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
-        }
+        // } catch (\Throwable $th) {
+        //     return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
+        // }
         return $this->json(["data" => $data]);
     }
 
