@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\CategoriesRepository;
 use App\Repository\ProductsRepository;
+use App\Repository\ReductionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,7 +13,7 @@ class ProductsController extends AbstractController
 {
     public $categoriesRepository;
     public $products;
-    public function __construct(CategoriesRepository $categoriesRepository, ProductsRepository $productsRepository)
+    public function __construct(CategoriesRepository $categoriesRepository, ProductsRepository $productsRepository, ReductionRepository $reductionRepository)
     {
         $this->products = $productsRepository;
         $this->categoriesRepository = $categoriesRepository;
@@ -76,17 +77,32 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/api/get-products', name: 'app_get_all_product', methods: ['GET'])]
-    public function getAllProduct()
+    public function getAllProduct(ReductionRepository $reductionRepository)
     {
-
         $allProducts = $this->products->findAll();
+        $reductions = $reductionRepository->findAll();
+
+        
+        $reductionsByProductId = [];
+
+        if ($reductions) {
+            foreach ($reductions as $reduction) {
+                $productId = $reduction->getIdCategory();
+
+               
+                if (!isset($reductionsByProductId[$productId])) {
+                    $reductionsByProductId[$productId] = $reduction->getReduction();
+                }
+            }
+        }
 
         $productJSON = [];
 
         foreach ($allProducts as $product) {
-
             $category = $product->getCategories();
+            $productId = $product->getId();
 
+            $productReduction = isset($reductionsByProductId[$productId]) ? $reductionsByProductId[$productId] : 0;
 
             $productJSON[] = [
                 "id" => $product->getId(),
@@ -98,15 +114,18 @@ class ProductsController extends AbstractController
                 "weight" => $product->getWeight(),
                 "images" => $product->getImages(),
                 "sizes" => $product->getSizes(),
-                "reduction" => $product->getReduction(),
+                "reduction" => $productReduction, 
             ];
         }
 
-
+       
         $productJSON[] = ["total_products" => count($productJSON)];
 
         return $this->json($productJSON, 200);
     }
+
+
+
 
 
     #[Route('/api/get-topfive', name: 'app_get_topfive', methods: ["GET"])]
@@ -152,38 +171,11 @@ class ProductsController extends AbstractController
 
 
     #[Route('/api/get-gem-products', name: 'app_get_gem_product', methods: ['GET'])]
-    public function getGemProduct()
-    {
-        $gem = [3, 4, 7, 10, 11, 14, 19, 21, 23];
-        $categories = $this->categoriesRepository->findBy(['id' => $gem]);
-
-        $productJSON = [];
-        $cat = [];
-
-        foreach ($categories as $category) {
-            $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
-            foreach ($products as $product) {
-                $productJSON[] = [
-                    "id" => $product->getId(),
-                    "categoryId" => $category->getId(),
-                    "categoryTitle" => $category->getTitle(),
-                    "title" => $product->getTitle(),
-                    "description" => $product->getDescription(),
-                    "price" => $product->getPrice(),
-                    "weight" => $product->getWeight(),
-                    "images" => $product->getImages(),
-                    "sizes" => $product->getSizes(),
-                    "reduction" => $product->getReduction(),
-                ];
-            }
-        }
-
-        return $this->json($productJSON, 200);
-    }
+    
     #[Route('/api/get-pem-products', name: 'app_get_pem_product', methods: ['GET'])]
     public function getPemProduct()
     {
-        $gem = [2, 5, 6, 8, 9];
+        $gem = [2, 5, 6, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
         $productJSON = [];
@@ -201,8 +193,7 @@ class ProductsController extends AbstractController
                     "price" => $product->getPrice(),
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
-                    "sizes" => $product->getSizes(),
-                    "reduction" => $product->getReduction(),
+                    "sizes" => $product->getSizes()
                 ];
             }
         }
@@ -213,7 +204,7 @@ class ProductsController extends AbstractController
     #[Route('/api/get-cuisine-products', name: 'app_get_cuisine_product', methods: ['GET'])]
     public function getCuisineProduct()
     {
-        $gem = [1, 2, 6, 5, 7, 10, 13, 15, 16, 17, 18, 19, 20];
+        $gem = [1, 27, 26];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
         $productJSON = [];
@@ -231,8 +222,7 @@ class ProductsController extends AbstractController
                     "price" => $product->getPrice(),
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
-                    "sizes" => $product->getSizes(),
-                    "reduction" => $product->getReduction(),
+                    "sizes" => $product->getSizes()
                 ];
             }
         }
@@ -262,7 +252,7 @@ class ProductsController extends AbstractController
                 "weight" => $product->getWeight(),
                 "images" => $product->getImages(),
                 "sizes" => $product->getSizes(),
-                "reduction" => $product->getReduction(),
+                "reduction" => $product->getReduction()
             ];
         }
 
