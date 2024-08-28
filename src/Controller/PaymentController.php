@@ -2,14 +2,11 @@
 
 namespace App\Controller;
 
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\UserComplementsRepository;
 
 class PaymentController extends AbstractController
 {
@@ -32,7 +29,7 @@ class PaymentController extends AbstractController
 
         try {
             $paymentIntent = \Stripe\PaymentIntent::create([
-                'amount' => $amount, // Utilisez le montant reçu du client
+                'amount' => $amount,
                 'currency' => 'EUR',
                 'payment_method' => $paymentMethodId,
                 'confirm' => true,

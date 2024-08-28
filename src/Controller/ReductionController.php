@@ -20,29 +20,48 @@ class ReductionController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
 
-            $idCategory = $data["idCategory"] ?? null;
-            $reduction = $data["reduction"] ?? null;
+            $idProducts = $data["id_products"] ?? [];
+            $reductionValue = $data["reduction"] ?? null;
             $endAt = $data["end_at"] ?? null;
 
-            if (!$idCategory || !$reduction || !$endAt) {
+            if (empty($idProducts) || !$reductionValue || !$endAt) {
                 return $this->json(["message" => "Veuillez remplir tous les champs"], 400);
             }
-            $intreduction = intval($reduction);
 
-            $reduction = new Reduction();
-            $reduction->setIdCategory($idCategory);
-            $reduction->setReduction($intreduction);
-            $reduction->setEndAt(new \DateTimeImmutable($endAt));
-            $reduction->setCreatedAt(new \DateTimeImmutable());
+            $intReduction = intval($reductionValue);
+            $endAtDate = new \DateTimeImmutable($endAt);
+            $createdAt = new \DateTimeImmutable();
 
-            $entityManager->persist($reduction);
+            foreach ($idProducts as $idProduct) {
+                
+                $existingReduction = $reductionRepository->findOneBy(['idCategory' => $idProduct]);
+
+                if ($existingReduction) {
+                   
+                    $existingReduction->setReduction($intReduction);
+                    $existingReduction->setEndAt($endAtDate);
+                    $existingReduction->setCreatedAt($createdAt);
+                } else {
+                    
+                    $reduction = new Reduction();
+                    $reduction->setIdCategory($idProduct);
+                    $reduction->setReduction($intReduction);
+                    $reduction->setEndAt($endAtDate);
+                    $reduction->setCreatedAt($createdAt);
+
+                    $entityManager->persist($reduction);
+                }
+            }
+
             $entityManager->flush();
 
-            return $this->json(["message" => "Reduction cree"], 201);
+            return $this->json(["data" => ["Reductions mises à jour/créées","success"]], 201);
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue"], 500);
         }
     }
+
+
 
     #[Route('/api/reduction', name: 'app_show_all_reductions', methods: ["GET"])]
     public function show_all(ReductionRepository $reductionRepository): JsonResponse
@@ -65,23 +84,22 @@ class ReductionController extends AbstractController
             if (!$reductions) {
                 return $this->json(["message" => "Aucune reduction trouvee"]);
             }
-
             foreach ($reductions as $reduction) {
                 $data[] = [
                     "id" => $reduction->getId(),
-                    "id_category" => $reduction->getIdCategory(),
+                    "id_products" => $reduction->getIdCategory(),
                     "reduction" => $reduction->getReduction(),
                     "end_at" => $reduction->getEndAt(),
                     "created_at" => $reduction->getCreatedAt()
                 ];
             }
         } catch (\Throwable $th) {
-            return $this->json(["message"=>"Une erreur est survenue"]);
+            return $this->json(["message" => "Une erreur est survenue"]);
         }
         return $this->json(["message" => $data]);
     }
 
-    #[Route('/api/reduction/{id}', name: 'app_show_reductions', methods: ["GET"], requirements:["id"=>"\d+"])]
+    #[Route('/api/reduction/{id}', name: 'app_show_reductions', methods: ["GET"], requirements: ["id" => "\d+"])]
     public function show(int $id, ReductionRepository $reductionRepository): JsonResponse
     {
         try {
@@ -92,21 +110,21 @@ class ReductionController extends AbstractController
             if (!$reduction) {
                 return $this->json(["message" => "Aucune reduction trouvee"], 404);
             }
-          
+
             $data = [
                 "id" => $reduction->getId(),
-                "id_category" => $reduction->getIdCategory(),
+                "id_products" => $reduction->getIdCategory(),
                 "reduction" => $reduction->getReduction(),
                 "end_at" => $reduction->getEndAt(),
                 "created_at" => $reduction->getCreatedAt()
             ];
         } catch (\Throwable $th) {
-            return $this->json(["message"=>"Une erreur est survenue"]);
+            return $this->json(["message" => "Une erreur est survenue"]);
         }
         return $this->json(["message" => $data]);
     }
 
-    #[Route('/api/reduction/{id}', name: 'app_update_reduction', methods: ["PATCH"], requirements:["id"=>"\d+"])]
+    #[Route('/api/reduction/{id}', name: 'app_update_reduction', methods: ["PATCH"], requirements: ["id" => "\d+"])]
     public function update(int $id, Request $request, EntityManagerInterface $entityManager, ReductionRepository $reductionRepository): JsonResponse
     {
         try {
@@ -145,7 +163,7 @@ class ReductionController extends AbstractController
         }
     }
 
-    #[Route('/api/reduction/{id}', name: 'app_delete_reduction', methods: ["DELETE"],  requirements:["id"=>"\d+"])]
+    #[Route('/api/reduction/{id}', name: 'app_delete_reduction', methods: ["DELETE"],  requirements: ["id" => "\d+"])]
     public function delete(int $id, EntityManagerInterface $entityManager, ReductionRepository $reductionRepository): JsonResponse
     {
         try {
