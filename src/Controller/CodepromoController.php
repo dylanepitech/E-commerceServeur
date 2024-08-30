@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Emails\EmailService;
 use App\Entity\CodePromotion;
 use App\Entity\User;
 use App\Repository\CodePromotionRepository;
@@ -14,10 +15,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class CodepromoController extends AbstractController
 {
     private $entityManager;
+    public $mailerService;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, EmailService $emailService)
     {
         $this->entityManager = $entityManager;
+        $this->mailerService = $emailService;
     }
 
     #[Route("/api/codepromo", name: "create_codepromo", methods: ["POST"])]
@@ -41,16 +44,33 @@ class CodepromoController extends AbstractController
             }
 
             $codePromo = new CodePromotion();
-            $codePromo->setUserId($user);  
+            $codePromo->setUserId($user);
             $codePromo->setCode($code);
             $codePromo->setValue($value);
             $codePromo->setCreatedAt(new \DateTimeImmutable());
             $codePromo->setExpireAt(new \DateTimeImmutable($expireAt));
 
+            $lastname =  $user->getLastname();
+            $firstname =  $user->getFirstname();
+            $email = $user->getEmail();
+
+            $this->mailerService->sendEmail(
+                $email,
+                "Votre code promotionel !",
+                "emails/promotionCode.html.twig",
+                [
+                    "firstname" => $firstname,
+                    "lastname" => $lastname,
+                    "value" => $value,
+                    "code" => $code,
+                    "expiration" => $expireAt
+                ]
+            );
+
             $entityManager->persist($codePromo);
             $entityManager->flush();
 
-            return new JsonResponse(['message' => ['Code promo cree',"succes"]], 201);
+            return new JsonResponse(['message' => ['Code promo cree', "succes"]], 201);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => 'An error occurred: ' . $e->getMessage()], 500);
         }

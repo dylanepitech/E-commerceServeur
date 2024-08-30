@@ -53,6 +53,9 @@ class Products
      */
     #[ORM\OneToMany(mappedBy: 'idProducts', targetEntity: Notation::class)]
     private Collection $notations;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $reduction = null;
  
     public function __construct()
     {
@@ -230,6 +233,18 @@ class Products
             }
         }
  
+        return $this;
+    }
+
+    public function getReduction(): ?string
+    {
+        return $this->reduction;
+    }
+
+    public function setReduction(?string $reduction): static
+    {
+        $this->reduction = $reduction;
+
         return $this;
     }
 }
