@@ -37,24 +37,10 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/api/get-product/{id}', name: 'app_get_product_by_id', methods: ['GET'])]
-    public function getProductByCategory(int $id, ReductionRepository $reductionRepository)
+    public function getProductByCategory(int $id)
     {
         $allProducts = $this->products->findAll();
-        $reductions = $reductionRepository->findAll();
 
-
-        $reductionsByProductId = [];
-
-        if ($reductions) {
-            foreach ($reductions as $reduction) {
-                $productId = $reduction->getIdCategory();
-
-
-                if (!isset($reductionsByProductId[$productId])) {
-                    $reductionsByProductId[$productId] = $reduction->getReduction();
-                }
-            }
-        }
 
         $allProducts = $this->products->findBy(['categories' => $id]);
 
@@ -68,9 +54,8 @@ class ProductsController extends AbstractController
         if ($category) {
 
             foreach ($allProducts as $value) {
-                $productId = $value->getId();
+                $reduction = $value->getReduction();
 
-                $productReduction = isset($reductionsByProductId[$productId]) ? $reductionsByProductId[$productId] : 0;
                 $productJSON[] = [
                     "id" => $value->getId(),
                     "categoryId" => $category->getId(),
@@ -81,7 +66,7 @@ class ProductsController extends AbstractController
                     "weight" => $value->getWeight(),
                     "images" => $value->getImages(),
                     "sizes" => $value->getSizes(),
-                    "reduction" => $productReduction,
+                    "reduction" => $reduction ? $reduction->getReduction() : 0,
                 ];
             }
 
@@ -97,32 +82,16 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/api/get-products', name: 'app_get_all_product', methods: ['GET'])]
-    public function getAllProduct(ReductionRepository $reductionRepository)
+    public function getAllProduct()
     {
         $allProducts = $this->products->findAll();
-        $reductions = $reductionRepository->findAll();
-
-
-        $reductionsByProductId = [];
-
-        if ($reductions) {
-            foreach ($reductions as $reduction) {
-                $productId = $reduction->getIdCategory();
-
-
-                if (!isset($reductionsByProductId[$productId])) {
-                    $reductionsByProductId[$productId] = $reduction->getReduction();
-                }
-            }
-        }
-
         $productJSON = [];
 
         foreach ($allProducts as $product) {
             $category = $product->getCategories();
             $productId = $product->getId();
+            $reduction = $product->getReduction();
 
-            $productReduction = isset($reductionsByProductId[$productId]) ? $reductionsByProductId[$productId] : 0;
 
             $productJSON[] = [
                 "id" => $product->getId(),
@@ -134,7 +103,7 @@ class ProductsController extends AbstractController
                 "weight" => $product->getWeight(),
                 "images" => $product->getImages(),
                 "sizes" => $product->getSizes(),
-                "reduction" => $productReduction,
+                "reduction" => $reduction ? $reduction->getReduction() : 0,
             ];
         }
 
@@ -191,24 +160,8 @@ class ProductsController extends AbstractController
 
 
     #[Route('/api/get-gem-products', name: 'app_get_gem_product', methods: ['GET'])]
-    public function getGemProduct(ReductionRepository $reductionRepository)
+    public function getGemProduct()
     {
-
-        $reductions = $reductionRepository->findAll();
-
-
-        $reductionsByProductId = [];
-
-        if ($reductions) {
-            foreach ($reductions as $reduction) {
-                $productId = $reduction->getIdCategory();
-
-
-                if (!isset($reductionsByProductId[$productId])) {
-                    $reductionsByProductId[$productId] = $reduction->getReduction();
-                }
-            }
-        }
         $gem = [3, 7, 10, 11, 14, 21];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
@@ -219,8 +172,7 @@ class ProductsController extends AbstractController
             $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
 
             foreach ($products as $product) {
-                $productId = $product->getId();
-                $productReduction = isset($reductionsByProductId[$productId]) ? $reductionsByProductId[$productId] : 0;
+                $reduction = $product->getReduction();
 
                 $productJSON[] = [
                     "id" => $product->getId(),
@@ -232,7 +184,7 @@ class ProductsController extends AbstractController
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
                     "sizes" => $product->getSizes(),
-                    "reduction" => $productReduction,
+                    "reduction" => $reduction ? $reduction->getReduction() : 0,
                 ];
             }
         }
@@ -241,24 +193,8 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/api/get-pem-products', name: 'app_get_pem_product', methods: ['GET'])]
-    public function getPemProduct(ReductionRepository $reductionRepository)
+    public function getPemProduct()
     {
-        $reductions = $reductionRepository->findAll();
-
-
-        $reductionsByProductId = [];
-
-        if ($reductions) {
-            foreach ($reductions as $reduction) {
-                $productId = $reduction->getIdCategory();
-
-
-                if (!isset($reductionsByProductId[$productId])) {
-                    $reductionsByProductId[$productId] = $reduction->getReduction();
-                }
-            }
-        }
-
         $gem = [2, 5, 6, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
@@ -268,20 +204,19 @@ class ProductsController extends AbstractController
         foreach ($categories as $category) {
             $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
             foreach ($products as $product) {
-                $productId = $product->getId();
-                $productReduction = isset($reductionsByProductId[$productId]) ? $reductionsByProductId[$productId] : 0;
+                $reduction = $product->getReduction();
 
                 $productJSON[] = [
                     "id" => $product->getId(),
-                    "categoryId" => $category->getId(),
-                    "categoryTitle" => $category->getTitle(),
+                    "categoryId" => $product->getCategories()->getId(),
+                    "categoryTitle" => $product->getCategories()->getTitle(),
                     "title" => $product->getTitle(),
                     "description" => $product->getDescription(),
                     "price" => $product->getPrice(),
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
                     "sizes" => $product->getSizes(),
-                    "reduction" => $productReduction,
+                    "reduction" => $reduction ? $reduction->getReduction() : 0,
                 ];
             }
         }
@@ -290,35 +225,19 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/api/get-cuisine-products', name: 'app_get_cuisine_product', methods: ['GET'])]
-    public function getCuisineProduct(ReductionRepository $reductionRepository)
+    public function getCuisineProduct()
     {
-        $reductions = $reductionRepository->findAll();
 
-
-        $reductionsByProductId = [];
-
-        if ($reductions) {
-            foreach ($reductions as $reduction) {
-                $productId = $reduction->getIdCategory();
-
-
-                if (!isset($reductionsByProductId[$productId])) {
-                    $reductionsByProductId[$productId] = $reduction->getReduction();
-                }
-            }
-        }
 
         $gem = [1, 27, 26];
         $categories = $this->categoriesRepository->findBy(['id' => $gem]);
 
         $productJSON = [];
-        $cat = [];
 
         foreach ($categories as $category) {
             $products = $this->products->findBy(['categories' => $category], ['id' => 'ASC']);
             foreach ($products as $product) {
-                $productId = $product->getId();
-                $productReduction = isset($reductionsByProductId[$productId]) ? $reductionsByProductId[$productId] : 0;
+                $reduction = $product->getReduction();
 
                 $productJSON[] = [
                     "id" => $product->getId(),
@@ -330,7 +249,7 @@ class ProductsController extends AbstractController
                     "weight" => $product->getWeight(),
                     "images" => $product->getImages(),
                     "sizes" => $product->getSizes(),
-                    "reduction" => $productReduction,
+                    "reduction" => $reduction ? $reduction->getReduction() : 0,
                 ];
             }
         }
@@ -343,24 +262,30 @@ class ProductsController extends AbstractController
     {
 
         $products = $productsRepository->createQueryBuilder('p')
-            ->where('p.reduction IS NOT NULL')
+            ->join('App\Entity\Reduction', 'r', 'WITH', 'r.id_category = p.id')
+            ->where('r.id IS NOT NULL')
             ->getQuery()
             ->getResult();
 
         $productJson = [];
 
-        foreach ($products as $key => $product) {
+        foreach ($products as $product) {
+            $categories = [];
+
+            $categories = $product->getCategories();
+            $reduction = $product->getReduction();
+
             $productJson[] = [
                 "id" => $product->getId(),
-                "categoryId" => $product->getCategories(),
-                "categoryTitle" => "pem",
+                "categoriesId" => $categories->getId(),
+                "categoriesTitle" => $categories->getTitle(),
                 "title" => $product->getTitle(),
                 "description" => $product->getDescription(),
                 "price" => $product->getPrice(),
                 "weight" => $product->getWeight(),
                 "images" => $product->getImages(),
                 "sizes" => $product->getSizes(),
-                "reduction" => $product->getReduction()
+                "reduction" => $reduction ? $reduction->getReduction() : 0,
             ];
         }
 

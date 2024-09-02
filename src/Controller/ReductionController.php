@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Reduction;
 use App\Entity\User;
+use App\Repository\ProductsRepository;
 use App\Repository\ReductionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +16,7 @@ class ReductionController extends AbstractController
 {
 
     #[Route('/api/reduction', name: 'app_create_reduction', methods: ["POST"])]
-    public function create(Request $request, EntityManagerInterface $entityManager, ReductionRepository $reductionRepository): JsonResponse
+    public function create(Request $request, EntityManagerInterface $entityManager, ReductionRepository $reductionRepository, ProductsRepository $productsRepository): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
@@ -32,32 +33,28 @@ class ReductionController extends AbstractController
             $endAtDate = new \DateTimeImmutable($endAt);
             $createdAt = new \DateTimeImmutable();
 
-            foreach ($idProducts as $idProduct) {
-                
-                $existingReduction = $reductionRepository->findOneBy(['idCategory' => $idProduct]);
+            $products = $productsRepository->find($idProducts);
 
-                if ($existingReduction) {
-                   
-                    $existingReduction->setReduction($intReduction);
-                    $existingReduction->setEndAt($endAtDate);
-                    $existingReduction->setCreatedAt($createdAt);
-                } else {
-                    
-                    $reduction = new Reduction();
-                    $reduction->setIdCategory($idProduct);
-                    $reduction->setReduction($intReduction);
-                    $reduction->setEndAt($endAtDate);
-                    $reduction->setCreatedAt($createdAt);
+            $reduction = $products->getReduction();
 
-                    $entityManager->persist($reduction);
-                }
+            if (!$reduction) {
+                $reduction = new Reduction();
+                $reduction->setReduction($reductionValue);
+                $reduction->setCreatedAt($createdAt);
+                $reduction->setEndAt($endAtDate);
+                $reduction->setIdCategory($products);
+                $products->setReduction($reduction);
+                $entityManager->persist($reduction);
+                $entityManager->flush();
+            } else {
+                $reduction->setReduction($reductionValue);
+                $entityManager->persist($reduction);
+                $entityManager->flush();
+                return $this->json('Code promo chaneger', 200);
             }
-
-            $entityManager->flush();
-
-            return $this->json(["data" => ["Reductions mises à jour/créées","success"]], 201);
+            return $this->json(["data" => ["Reductions mises à jour/créées", "success"]], 201);
         } catch (\Throwable $th) {
-            return $this->json(["message" => "Une erreur est survenue"], 500);
+            return $this->json(["message" => "Une erreur est survenue, $th"], 500);
         }
     }
 
