@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Entity\SousCategory;
 use App\Repository\CategoriesRepository;
 use App\Repository\ProductsRepository;
@@ -494,7 +493,7 @@ class ProductsController extends AbstractController
             $entityManager->remove($sousCat);
             $entityManager->flush();
 
-            return $this->json(["message" => ["Sous-catégorie supprimée","success"]]);
+            return $this->json(["message" => ["Sous-catégorie supprimée", "success"]]);
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue lors de la suppression"], 500);
         }
