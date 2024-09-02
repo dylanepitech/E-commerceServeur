@@ -16,6 +16,9 @@ class SousCategory
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $link = null;
+
     #[ORM\Column]
     private array $idProducts = [];
 
@@ -32,6 +35,17 @@ class SousCategory
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
+        return $this;
+    }
+    public function getLink(): ?string
+    {
+        return $this->link;
+    }
+
+    public function setLink(string $link): static
+    {
+        $this->link = $link;
 
         return $this;
     }

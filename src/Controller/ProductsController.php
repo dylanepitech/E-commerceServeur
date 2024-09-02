@@ -2,11 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Entity\SousCategory;
 use App\Repository\CategoriesRepository;
 use App\Repository\ProductsRepository;
 use App\Repository\ReductionRepository;
+use App\Repository\SousCategoryRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ProductsController extends AbstractController
@@ -365,5 +370,208 @@ class ProductsController extends AbstractController
         }
 
         return $this->json($productJson, 200);
+    }
+
+    #[Route('/api/sous-category', name: "app_create_sous_category", methods: ['POST'])]
+    public function createSousCategory(Request $request, EntityManagerInterface $entityManager, SousCategoryRepository $sousCategoryRepository): JsonResponse
+    {
+        try {
+
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
+            $data = json_decode($request->getContent(), true);
+
+            $title = $data["title"] ?? null;
+            $link = $data["link"] ?? null;
+
+            if (!$title || !$link) {
+                return $this->json(["message" => "Tous les champs sont requis"], 400);
+            }
+
+            $existingTitle = $sousCategoryRepository->findOneBy(["title" => $title]);
+            $existingLink = $sousCategoryRepository->findOneBy(["link" => $link]);
+
+            if ($existingLink || $existingTitle) {
+                return $this->json(["message" => "Link ou title deja pris"], 400);
+            }
+
+            $sousCategory = new SousCategory();
+            $sousCategory->setTitle($title);
+            $sousCategory->setLink($link);
+            $sousCategory->setIdProducts([]);
+
+            $entityManager->persist($sousCategory);
+            $entityManager->flush();
+        } catch (\Throwable $th) {
+            return $this->json(["data" => "Une erreur est survenue"]);
+        }
+        return $this->json(["data" => ["Sous category cree", "success"]], 200);
+    }
+
+    #[Route('/api/sous-category', name: "app_get_sous_category", methods: ['GET'])]
+    public function getSousCategory(SousCategoryRepository $sousCategoryRepository): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
+            $sousCat = $sousCategoryRepository->findAll();
+
+            if (!$sousCat) {
+                return $this->json(["message" => "Aucune sous category"], 404);
+            }
+
+            $data = [];
+
+            foreach ($sousCat as $key => $value) {
+                $data[] = [
+                    "id" => $value->getId(),
+                    "title" => $value->getTitle(),
+                    "link" => $value->getLink(),
+                    "products" => $value->getIdProducts()
+                ];
+            }
+
+            return $this->json(["data" => $data]);
+        } catch (\Throwable $th) {
+            return $this->json(["data" => "Une erreur est survenue"]);
+        }
+    }
+
+    #[Route('/api/sous-category/{id}', name: "app_update_sous_category", methods: ['PATCH'])]
+    public function updateSousCategory(int $id, Request $request, EntityManagerInterface $entityManager, SousCategoryRepository $sousCategoryRepository): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
+            $data = json_decode($request->getContent(), true);
+
+            $category = $data["category"] ?? null;
+
+            if (!$category) {
+                return $this->json(["message" => "Aucune categorie selectionnee"], 400);
+            }
+
+            $sousCat = $sousCategoryRepository->find($id);
+
+            if (!$sousCat) {
+                return $this->json(["message" => "Aucune sous category ne corresponds"], 400);
+            }
+
+            $sousCat->setIdProducts($category);
+
+            $entityManager->flush();
+            $sousCat = $sousCategoryRepository->findAll();
+
+            $data = [];
+            foreach ($sousCat as $key => $value) {
+                $data[] = [
+                    "id" => $value->getId(),
+                    "title" => $value->getTitle(),
+                    "link" => $value->getLink(),
+                    "products" => $value->getIdProducts()
+                ];
+            }
+
+            return $this->json(["data" => $data]);
+        } catch (\Throwable $th) {
+            return $this->json(["message" => "Une erreur est survenue"]);
+        }
+    }
+
+    #[Route('/api/sous-category/{id}', name: "app_update_sous_category_name", methods: ['PATCH'])]
+    public function updateSousCategoryName(int $id, Request $request, EntityManagerInterface $entityManager, SousCategoryRepository $sousCategoryRepository): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
+            $data = json_decode($request->getContent(), true);
+
+            $title = $data["title"] ?? null;
+            $link = $data["link"] ?? null;
+
+
+            if ($title === null && $link === null) {
+                return $this->json(["message" => "Aucune donnée modifiée"], 400);
+            }
+
+            $sousCat = $sousCategoryRepository->find($id);
+
+            if (!$sousCat) {
+                return $this->json(["message" => "Aucune sous-catégorie ne correspond"], 400);
+            }
+
+
+            if ($title !== null) {
+                $sousCat->setTitle($title);
+            }
+
+            if ($link !== null) {
+                $sousCat->setLink($link);
+            }
+
+            $entityManager->flush();
+
+            $sousCat = $sousCategoryRepository->findAll();
+
+            $data = [];
+            foreach ($sousCat as $value) {
+                $data[] = [
+                    "id" => $value->getId(),
+                    "title" => $value->getTitle(),
+                    "link" => $value->getLink(),
+                    "products" => $value->getIdProducts()
+                ];
+            }
+
+            return $this->json(["data" => $data]);
+        } catch (\Throwable $th) {
+            return $this->json(["message" => "Une erreur est survenue"], 500);
+        }
+    }
+
+    #[Route('/api/sous-category/{id}', name: "app_delete_sous_category", methods: ['DELETE'])]
+    public function deleteSousCategory(int $id, EntityManagerInterface $entityManager, SousCategoryRepository $sousCategoryRepository): JsonResponse
+    {
+        try {
+            $user = $this->getUser();
+            $userRoles = $user->getRoles();
+
+            if (!in_array("ROLE_ADMIN", $userRoles)) {
+                return $this->json(["message" => "Accès refusé"], 403);
+            }
+
+            $sousCat = $sousCategoryRepository->find($id);
+
+            if (!$sousCat) {
+                return $this->json(["message" => "Aucune sous-catégorie ne correspond"], 400);
+            }
+
+            $entityManager->remove($sousCat);
+            $entityManager->flush();
+
+            return $this->json(["message" => ["Sous-catégorie supprimée","success"]]);
+        } catch (\Throwable $th) {
+            return $this->json(["message" => "Une erreur est survenue lors de la suppression"], 500);
+        }
     }
 }
