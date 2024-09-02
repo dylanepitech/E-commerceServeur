@@ -28,12 +28,11 @@ class ReductionController extends AbstractController
             if (empty($idProducts) || !$reductionValue || !$endAt) {
                 return $this->json(["message" => "Veuillez remplir tous les champs"], 400);
             }
-
-            $intReduction = intval($reductionValue);
+            $intvalID = intval($idProducts);
             $endAtDate = new \DateTimeImmutable($endAt);
             $createdAt = new \DateTimeImmutable();
 
-            $products = $productsRepository->find($idProducts);
+            $products = $productsRepository->find($intvalID);
 
             $reduction = $products->getReduction();
 
