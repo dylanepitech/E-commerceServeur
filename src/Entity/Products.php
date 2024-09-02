@@ -54,12 +54,16 @@ class Products
     #[ORM\OneToMany(mappedBy: 'idProducts', targetEntity: Notation::class)]
     private Collection $notations;
 
+<<<<<<< HEAD
     #[ORM\OneToOne(mappedBy: 'id_category', cascade: ['persist', 'remove'])]
     private ?Reduction $reduction = null;
 
 
 
 
+=======
+ 
+>>>>>>> 6af785d5bd4d9b9f2bef4018e3314f1d5d9af34d
     public function __construct()
     {
         $this->productsComments = new ArrayCollection();
@@ -239,6 +243,7 @@ class Products
         return $this;
     }
 
+<<<<<<< HEAD
     public function getReduction(): ?Reduction
     {
         return $this->reduction;
@@ -261,3 +266,7 @@ class Products
         return $this;
     }
 }
+=======
+    
+}
+>>>>>>> 6af785d5bd4d9b9f2bef4018e3314f1d5d9af34d

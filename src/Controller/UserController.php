@@ -362,7 +362,7 @@ class UserController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
         } catch (\Throwable $th) {
-            return $this->json(['message' => "Erreur est survenue"], 500);
+            return $this->json(['message' => "Erreu est survenue"], 500);
         }
 
 
