@@ -28,28 +28,29 @@ class ReductionController extends AbstractController
             if (empty($idProducts) || !$reductionValue || !$endAt) {
                 return $this->json(["message" => "Veuillez remplir tous les champs"], 400);
             }
-            $intvalID = intval($idProducts);
             $endAtDate = new \DateTimeImmutable($endAt);
             $createdAt = new \DateTimeImmutable();
 
-            $products = $productsRepository->find($intvalID);
+            foreach ($idProducts as $value) {
+                $products = $productsRepository->find($value);
 
-            $reduction = $products->getReduction();
+                $reduction = $products->getReduction();
 
-            if (!$reduction) {
-                $reduction = new Reduction();
-                $reduction->setReduction($reductionValue);
-                $reduction->setCreatedAt($createdAt);
-                $reduction->setEndAt($endAtDate);
-                $reduction->setIdCategory($products);
-                $products->setReduction($reduction);
-                $entityManager->persist($reduction);
-                $entityManager->flush();
-            } else {
-                $reduction->setReduction($reductionValue);
-                $entityManager->persist($reduction);
-                $entityManager->flush();
-                return $this->json('Code promo chaneger', 200);
+                if (!$reduction) {
+                    $reduction = new Reduction();
+                    $reduction->setReduction($reductionValue);
+                    $reduction->setCreatedAt($createdAt);
+                    $reduction->setEndAt($endAtDate);
+                    $reduction->setIdCategory($products);
+                    $products->setReduction($reduction);
+                    $entityManager->persist($reduction);
+                    $entityManager->flush();
+                } else {
+                    $reduction->setReduction($reductionValue);
+                    $entityManager->persist($reduction);
+                    $entityManager->flush();
+                    return $this->json('Code promo chaneger', 200);
+                }
             }
             return $this->json(["data" => ["Reductions mises à jour/créées", "success"]], 201);
         } catch (\Throwable $th) {
