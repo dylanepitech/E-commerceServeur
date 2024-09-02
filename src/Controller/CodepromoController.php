@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CodepromoController extends AbstractController
 {
@@ -106,7 +107,7 @@ class CodepromoController extends AbstractController
         }
     }
 
-    #[Route("/api/codepromo/{userId}", name: "get_codepromo_by_user", methods: ["GET"])]
+    #[Route("/api/codepromo/me", name: "get_codepromo_by_user", methods: ["GET"])]
     public function getCodePromoByUser(int $userId, CodePromotionRepository $repository): JsonResponse
     {
         try {
@@ -149,5 +150,36 @@ class CodepromoController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse(['message' => 'Une erreur est survenue  ' . $e->getMessage()], 500);
         }
+    }
+
+    #[Route('/api/codepromo/verify', name: 'api_verify_codePromo', methods: ['POST'])]
+    public function verifyCodePromo(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+        $codePromotion = $data['codePromotion'];
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->json("Erreur lors de l'authentification", 403);
+        }
+
+        $codePromoUser = $user->getCodePromotions();
+        $codePromotionJson = [];
+
+        foreach ($codePromoUser as $code) {
+            if ($code->getCode() === $codePromotion) {
+                $codePromotionJson = [
+                    "id" => $code->getId(),
+                    "value" => $code->getValue(),
+                    "expire_at" => $code->getExpireAt()
+                ];
+            }
+        }
+
+        if (!empty($codePromotionJson)) {
+            return $this->json($codePromotionJson, 200);
+        }
+
+        return $this->json('Aucun code promotion trouvé', 404);
     }
 }

@@ -19,7 +19,7 @@ class CartController extends AbstractController
         try {
             $user = $this->getUser();
             $userRoles = $user->getRoles();
-    
+
             if (!in_array("ROLE_ADMIN", $userRoles)) {
                 return $this->json(["message" => "Accès refusé"], 403);
             }
@@ -49,13 +49,13 @@ class CartController extends AbstractController
         try {
             $user = $this->getUser();
             $userRoles = $user->getRoles();
-    
+
             if (!in_array("ROLE_ADMIN", $userRoles)) {
                 return $this->json(["message" => "Accès refusé"], 403);
             }
-            
+
             $cart = $cartRepository->findOneBy(["idUser" => $id]);
-            
+
             if (!$cart) {
                 return $this->json(["message" => "Aucune cart trouvée"], 400);
             }
@@ -97,7 +97,6 @@ class CartController extends AbstractController
                 "id_products" => $cart->getIdProducts(),
                 "date_start" => $cart->getDateStart()
             ];
-
         } catch (\Throwable $th) {
             return $this->json(["message" => "Une erreur est survenue"], 500);
         }
@@ -196,7 +195,7 @@ class CartController extends AbstractController
 
             $products = $data["idProducts"] ?? null;
 
-       
+
 
             $cart->setIdProducts($products);
             $entityManager->flush();
