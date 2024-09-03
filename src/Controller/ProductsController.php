@@ -357,12 +357,34 @@ class ProductsController extends AbstractController
             $data = [];
 
             foreach ($sousCat as $key => $value) {
+                $categories= $value->getIdProducts();
+
+                if($categories){
+                    foreach ($categories as $category) {
+                        $searchedCategory= $this->categoriesRepository->find($category);
+                        
+                        if($searchedCategory){
+                           $allCategories []=[
+                               "id"=>$searchedCategory->getId(), 
+                               "title"=>$searchedCategory->getTitle(), 
+                           ];
+                        }
+                    }
+
+                }else{
+                    $allCategories =[];
+                }
+                
+
                 $data[] = [
                     "id" => $value->getId(),
                     "title" => $value->getTitle(),
                     "link" => $value->getLink(),
-                    "products" => $value->getIdProducts()
+                    "categories" => $allCategories
                 ];
+
+
+
             }
 
             return $this->json(["data" => $data]);
