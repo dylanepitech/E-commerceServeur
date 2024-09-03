@@ -3,7 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
-use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
@@ -15,9 +16,8 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Cart $idCart = null;
+    #[ORM\ManyToMany(targetEntity: Products::class)]
+    private Collection $products;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
@@ -26,25 +26,39 @@ class Order
     #[ORM\Column]
     private ?\DateTimeImmutable $order_date = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable:true)]
     private ?\DateTimeImmutable $reception_date = null;
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getIdCart(): ?Cart
+    public function getProducts(): Collection
     {
-        return $this->idCart;
+        return $this->products;
     }
 
-    public function setIdCart(?Cart $idCart): static
+    public function addProduct(Products $product): static
     {
-        $this->idCart = $idCart;
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Products $product): static
+    {
+        $this->products->removeElement($product);
 
         return $this;
     }
@@ -97,5 +111,3 @@ class Order
         return $this;
     }
 }
-
-
