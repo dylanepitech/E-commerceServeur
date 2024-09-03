@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class ProductsController extends AbstractController
 {
@@ -71,6 +72,7 @@ class ProductsController extends AbstractController
                     "images" => $value->getImages(),
                     "sizes" => $value->getSizes(),
                     "reduction" => $reduction ? $reduction->getReduction() : 0,
+                    "delivery_delai" => $value->getDeliveryDelay()
                 ];
             }
 
@@ -108,6 +110,7 @@ class ProductsController extends AbstractController
                 "images" => $product->getImages(),
                 "sizes" => $product->getSizes(),
                 "reduction" => $reduction ? $reduction->getReduction() : 0,
+                "delivery_delai" => $product->getDeliveryDelay(),
             ];
         }
 
@@ -118,48 +121,30 @@ class ProductsController extends AbstractController
     }
 
 
-
-
-
-    #[Route('/api/get-topfive', name: 'app_get_topfive', methods: ["GET"])]
-    public function getTopFIve(): JsonResponse
+    #[Route('/api/getsimilar/{categoryId}', name: "app_get_similar_product", methods: ['POST'])]
+    #[IsGranted('PUBLIC_ACCESS')]
+    public function getSimilar(int $categoryId, ProductsRepository $productsRepository): JsonResponse
     {
+        $products = $productsRepository->findByCategory($categoryId, 5);
 
-        $topFive = [1, 2, 3, 4, 5, 6];
+        $productData = array_map(function ($product) {
+            $reduction = $product->getReduction();
+            $reductionValue = $reduction ? $reduction->getReduction() : 0;
 
+            return [
+                "id" => $product->getId(),
+                "title" => $product->getTitle(),
+                "description" => $product->getDescription(),
+                "price" => $product->getPrice(),
+                "weight" => $product->getWeight(),
+                "images" => $product->getImages(),
+                "sizes" => $product->getSizes(),
+                "reduction" => $reductionValue,
+                "delivery_delay" => $product->getDeliveryDelay(),
+            ];
+        }, $products);
 
-        $categories = $this->categoriesRepository->findBy(['id' => $topFive]);
-
-        $productJSON = [];
-
-
-        foreach ($categories as $category) {
-
-            $product = $this->products->findOneBy(['categories' => $category], ['id' => 'ASC']);
-
-
-            if ($product) {
-
-                $images = $product->getImages();
-                $firstImage = null;
-
-                if (!empty($images)) {
-
-                    $firstImageKey = array_key_first($images);
-
-                    $firstImage = $images[$firstImageKey][0]['image'] ?? null;
-                }
-
-                $productJSON[] = [
-                    "title" => $category->getTitle(),
-                    "image" => $firstImage,
-                ];
-            }
-        }
-
-
-
-        return $this->json(["data" => $productJSON]);
+        return new JsonResponse($productData);
     }
 
 
