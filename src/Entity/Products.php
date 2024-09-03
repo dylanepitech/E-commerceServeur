@@ -225,7 +225,7 @@ class Products
     public function removeNotation(Notation $notation): static
     {
         if ($this->notations->removeElement($notation)) {
-            // set the owning side to null (unless already changed)
+           
             if ($notation->getIdProducts() === $this) {
                 $notation->setIdProducts(null);
             }
