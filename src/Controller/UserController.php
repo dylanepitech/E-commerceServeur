@@ -51,7 +51,8 @@ class UserController extends AbstractController
                     "is_actif" => $userInfo->isActif(),
                     "created_at" => $userInfo->getCreatedAt(),
                     "updated_at" => $userInfo->getUpdatedAt(),
-                    "code_promo" => $codePromoData
+                    "code_promo" => $codePromoData,
+                    "commandes"=> $userInfo->getOrders()
                 ];
     
                 $userComplements = [];
