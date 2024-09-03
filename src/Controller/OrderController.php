@@ -7,6 +7,7 @@ use App\Entity\Order;
 use App\Entity\User;
 use App\Repository\CartRepository;
 use App\Repository\OrderRepository;
+use App\Repository\ProductsRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -101,11 +102,57 @@ class OrderController extends AbstractController
         return $this->json(["message" => $data]);
     }
 
+    // #[Route('/api/order', name: 'app_create_order', methods: ["POST"])]
+    // public function create(Request $request, EntityManagerInterface $entityManager, OrderRepository $orderRepository, CartRepository $cartRepository): JsonResponse
+    // {
+    //     try {
+
+    //         $user = $this->getUser();
+
+    //         if ($user instanceof User) {
+    //             $userId = $user->getId();
+    //         } else {
+    //             return $this->json(['message' => "Aucun utilisateur trouvé"], 404);
+    //         }
+
+    //         $data = json_decode($request->getContent(), true);
+
+    //         $idCart = $data['idCart'] ?? null;
+
+    //         $order = new Order();
+
+    //         if (!$idCart) {
+    //             return $this->json(["message" => "Aucun panier selectionne"], 404);
+    //         }
+
+    //         $cart = $cartRepository->find($idCart);
+
+    //         if (!$cart) {
+    //             return $this->json(["message" => "Aucun panier trouve"], 404);
+    //         }
+
+    //         $order->setIdCart($cart);
+    //         $order->setIdUser($user);
+    //         $order->setOrderDate(new \DateTimeImmutable());
+    //         $order->setStatus("traitement");
+
+    //         $entityManager->persist($order);
+    //         $entityManager->flush();
+
+
+    //         $entityManager->remove($cart);
+    //         $entityManager->flush();
+    //     } catch (\Throwable $th) {
+    //         return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
+    //     }
+
+    //     return $this->json(["message" => "Commande reussie"]);
+    // }
+
     #[Route('/api/order', name: 'app_create_order', methods: ["POST"])]
-    public function create(Request $request, EntityManagerInterface $entityManager, OrderRepository $orderRepository, CartRepository $cartRepository): JsonResponse
+    public function create(Request $request, EntityManagerInterface $entityManager, ProductsRepository $productsRepository): JsonResponse
     {
         try {
-
             $user = $this->getUser();
 
             if ($user instanceof User) {
@@ -116,37 +163,33 @@ class OrderController extends AbstractController
 
             $data = json_decode($request->getContent(), true);
 
-            $idCart = $data['idCart'] ?? null;
+            $productIds = $data['productIds'] ?? null;
+
+            if (!$productIds || !is_array($productIds)) {
+                return $this->json(["message" => "Aucun produit sélectionné"], 400);
+            }
 
             $order = new Order();
-
-            if (!$idCart) {
-                return $this->json(["message" => "Aucun panier selectionne"], 404);
-            }
-
-            $cart = $cartRepository->find($idCart);
-
-            if (!$cart) {
-                return $this->json(["message" => "Aucun panier trouve"], 404);
-            }
-
-            $order->setIdCart($cart);
             $order->setIdUser($user);
             $order->setOrderDate(new \DateTimeImmutable());
             $order->setStatus("traitement");
 
+            foreach ($productIds as $productId) {
+                $product = $productsRepository->find($productId);
+                if ($product) {
+                    $order->addProduct($product);
+                }
+            }
+
             $entityManager->persist($order);
             $entityManager->flush();
-
-           
-            $entityManager->remove($cart);
-            $entityManager->flush();
         } catch (\Throwable $th) {
-            return $this->json(["message" => "Une erreur est survenue", "error" => $th], 500);
+            return $this->json(["message" => "Une erreur est survenue", "error" => $th->getMessage()], 500);
         }
 
-        return $this->json(["message" => "Commande reussie"]);
+        return $this->json(["message" => "Commande réussie"]);
     }
+
 
 
     #[Route('/api/order/{id}', name: 'app_delete_order', methods: ["DELETE"], requirements: ['id' => '\d+'])]

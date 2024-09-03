@@ -18,18 +18,18 @@ class UserController extends AbstractController
     {
         try {
             $user = $this->getUser();
-    
+
             if (!$user || !in_array("ROLE_ADMIN", $user->getRoles())) {
                 return $this->json(['message' => "Accès refusé"], 403);
             }
-    
+
             $users = $userRepository->findAll();
             $data = [];
-    
+
             foreach ($users as $userInfo) {
                 $codePromos = $userInfo->getCodePromotions();
                 $codePromoData = [];
-    
+
                 foreach ($codePromos as $codePromo) {
                     $codePromoData[] = [
                         "id" => $codePromo->getId(),
@@ -39,7 +39,7 @@ class UserController extends AbstractController
                         "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
                     ];
                 }
-    
+
                 $userData = [
                     "id" => $userInfo->getId(),
                     "email" => $userInfo->getEmail(),
@@ -52,9 +52,10 @@ class UserController extends AbstractController
                     "created_at" => $userInfo->getCreatedAt(),
                     "updated_at" => $userInfo->getUpdatedAt(),
                     "code_promo" => $codePromoData,
-                    "commandes"=> $userInfo->getOrders()
+                    "commandes" => []
                 ];
-    
+
+               
                 $userComplements = [];
                 foreach ($userInfo->getUserComplements() as $complement) {
                     $userComplements[] = [
@@ -64,15 +65,15 @@ class UserController extends AbstractController
                         "phone" => $complement->getPhone()
                     ];
                 }
-    
+
                 $userData["user_complements"] = $userComplements;
-    
+
                 $data[] = $userData;
             }
         } catch (\Throwable $th) {
             return $this->json(['message' => "Une erreur est survenue"], 500);
         }
-    
+
         return $this->json(["data" => $data]);
     }
 
@@ -83,14 +84,14 @@ class UserController extends AbstractController
         try {
             $user = $this->getUser();
             $userRoles = $user->getRoles();
-    
+
             if (!in_array("ROLE_ADMIN", $userRoles)) {
                 return $this->json(["message" => "Accès refusé"], 403);
             }
-    
+
             $users = $userRepository->find($id);
             $data = [];
-    
+
             foreach ($users as $user) {
                 $userData = [
                     "id" => $user->getId(),
@@ -103,8 +104,8 @@ class UserController extends AbstractController
                     "created_at" => $user->getCreatedAt(),
                     "updated_at" => $user->getUpdatedAt(),
                 ];
-    
-               
+
+
                 $codePromotions = [];
                 foreach ($user->getCodePromotions() as $codePromo) {
                     $codePromotions[] = [
@@ -115,10 +116,10 @@ class UserController extends AbstractController
                         "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
                     ];
                 }
-    
+
                 $userData["code_promo"] = $codePromotions;
-    
-                
+
+
                 $userComplements = [];
                 foreach ($user->getUserComplements() as $complement) {
                     $userComplements[] = [
@@ -128,16 +129,15 @@ class UserController extends AbstractController
                         "phone" => $complement->getPhone()
                     ];
                 }
-    
+
                 $userData["user_complements"] = $userComplements;
-    
+
                 $data[] = $userData;
             }
-    
         } catch (\Throwable $th) {
             return $this->json(['message' => "Une erreur est survenue"], 500);
         }
-    
+
         return $this->json(["data" => $data]);
     }
 
@@ -171,6 +171,7 @@ class UserController extends AbstractController
                 ];
             }
 
+
             $data = [
                 "id" => $userInfo->getId(),
                 "email" => $userInfo->getEmail(),
@@ -181,8 +182,38 @@ class UserController extends AbstractController
                 "verified" => $userInfo->isVerified(),
                 "created_at" => $userInfo->getCreatedAt()->format('Y-m-d H:i:s'),
                 "updated_at" => $userInfo->getUpdatedAt()->format('Y-m-d H:i:s'),
-                "code_promo" => $codePromoData
+                "code_promo" => $codePromoData,
+                "commandes" => []
             ];
+
+
+            $orders = $userInfo->getOrders();
+
+            foreach ($orders as $order) {
+                $productsData = [];
+
+
+                foreach ($order->getProducts() as $product) {
+                    $reduction = $product->getReduction();
+                    $productsData[] = [
+                        'id' => $product->getId(),
+                        'title' => $product->getTitle(),
+                        'price' => $product->getPrice(),
+                        "reduction" => $reduction ? $reduction->getReduction() : 0,
+                    ];
+                }
+
+                $data['commandes'][] = [
+                    "id" => $order->getId(),
+                    "reception_date" => $order->getReceptionDate() ? $order->getReceptionDate()->format('Y-m-d H:i:s') : null,
+                    "order_date" => $order->getOrderDate()->format('Y-m-d H:i:s'),
+                    "status" => $order->getStatus(),
+                    "products" => $productsData,
+                ];
+            }
+
+
+
 
             $userComplements = [];
             foreach ($userInfo->getUserComplements() as $complement) {
@@ -431,7 +462,7 @@ class UserController extends AbstractController
 
                 $codePromos = $user->getCodePromotions();
                 $codePromoData = [];
-    
+
                 foreach ($codePromos as $codePromo) {
                     $codePromoData[] = [
                         "id" => $codePromo->getId(),
@@ -454,7 +485,7 @@ class UserController extends AbstractController
                     "updated_at" => $user->getUpdatedAt(),
                     "is_actif" => $user->isActif(),
                     "user_complements" => $userComplements,
-                    "code_promo"=>$codePromoData,
+                    "code_promo" => $codePromoData,
                 ];
             }
         } catch (\Throwable $th) {
