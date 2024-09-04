@@ -13,6 +13,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
 {
+  
     #[Route('/api/users', name: 'api_users', methods: ['GET'])]
     public function index(UserRepository $userRepository): JsonResponse
     {
@@ -35,8 +36,8 @@ class UserController extends AbstractController
                         "id" => $codePromo->getId(),
                         "code" => $codePromo->getCode(),
                         "value" => $codePromo->getValue(),
-                        "created_at" => $codePromo->getCreatedAt()->format('Y-m-d H:i:s'),
-                        "expire_at" => $codePromo->getExpireAt()->format('Y-m-d H:i:s'),
+                        "created_at" => $codePromo->getCreatedAt(),
+                        "expire_at" => $codePromo->getExpireAt(),
                     ];
                 }
 
@@ -55,7 +56,29 @@ class UserController extends AbstractController
                     "commandes" => []
                 ];
 
-               
+                $orders = $userInfo->getOrders();
+                foreach ($orders as $order) {
+                    $productsData = [];
+
+                    foreach ($order->getProducts() as $product) {
+                        $reduction = $product->getReduction();
+                        $productsData[] = [
+                            'id' => $product->getId(),
+                            'title' => $product->getTitle(),
+                            'price' => $product->getPrice(),
+                            "reduction" => $reduction ? $reduction->getReduction() : 0,
+                        ];
+                    }
+
+                    $userData['commandes'][] = [
+                        "id" => $order->getId(),
+                        "reception_date" => $order->getReceptionDate() ? $order->getReceptionDate() : null,
+                        "order_date" => $order->getOrderDate(),
+                        "status" => $order->getStatus(),
+                        "products" => $productsData,
+                    ];
+                }
+
                 $userComplements = [];
                 foreach ($userInfo->getUserComplements() as $complement) {
                     $userComplements[] = [
@@ -486,6 +509,7 @@ class UserController extends AbstractController
                     "is_actif" => $user->isActif(),
                     "user_complements" => $userComplements,
                     "code_promo" => $codePromoData,
+                    "commandes"=>[]
                 ];
             }
         } catch (\Throwable $th) {
