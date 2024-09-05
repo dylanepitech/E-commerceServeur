@@ -218,4 +218,41 @@ class CartController extends AbstractController
 
         return $this->json(["data" => $data]);
     }
+
+
+    #[Route('/api/deleteMyCart', name: "app_delte_my_cart", methods: ['GET'])]
+    public function deleteMyCart(EntityManagerInterface $entityManager, CartRepository $cartRepository)
+    {
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
+
+        // Vérifier si l'utilisateur est connecté
+        if (!$user instanceof User) {
+            return $this->json([
+                'status' => 'error',
+                'message' => "Vous n'êtes pas connecté."
+            ], 401);
+        }
+
+        // Récupérer le panier de l'utilisateur
+        $cartUser = $cartRepository->findOneBy(['idUser' => $user->getId()]);
+
+        // Vérifier si le panier existe
+        if (!$cartUser) {
+            return $this->json([
+                'status' => 'error',
+                'message' => "Aucun panier trouvé pour cet utilisateur."
+            ], 404);
+        }
+
+        // Supprimer le panier
+        $entityManager->remove($cartUser);
+        $entityManager->flush();
+
+        // Retourner une réponse de succès
+        return $this->json([
+            'status' => 'success',
+            'message' => "Le panier a été supprimé avec succès."
+        ]);
+    }
 }
