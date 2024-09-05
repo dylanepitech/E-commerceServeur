@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class OrderController extends AbstractController
 {
@@ -172,7 +173,7 @@ class OrderController extends AbstractController
             $order = new Order();
             $order->setIdUser($user);
             $order->setOrderDate(new \DateTimeImmutable());
-            $order->setStatus("traitement");
+            $order->setStatus("Traitement");
 
             foreach ($productIds as $productId) {
                 $product = $productsRepository->find($productId);
@@ -219,5 +220,39 @@ class OrderController extends AbstractController
             return $this->json(["message" => "Une erreurnest survenue"]);
         }
         return $this->json(["message" => "Commande annulée/supprimée"]);
+    }
+
+    #[Route('/api/getOrdertest', name: 'app_get_order', methods: ['POST'])]
+    public function getOrdertest(Request $request, OrderRepository $orderRepository)
+    {
+        try {
+            $user = $this->getUser();
+            $data = json_decode($request->getContent(), true);
+            $orderId = $data['orderId'];
+
+            if (!$user instanceof User) {
+                return $this->json('Client inconnue', 404);
+            }
+
+            $order = $orderRepository->find($orderId);
+
+            $products = $order->getProducts();
+            $orderJSON = [];
+
+            foreach ($products as $value) {
+                $reduction = $value->getReduction();
+                $orderJSON[] = [
+                    "title" => $value->getTitle(),
+                    "price" => $value->getPrice(),
+                    "reduction" => $reduction ? $reduction->getReduction() : 0,
+                    "orderDate" => $order->getOrderDate()->format('d-m-y'),
+                    "orderHour" => $order->getOrderDate()->format('H:i:s'),
+                    "orderStatus" => $order->getStatus(),
+                ];
+            }
+            return $this->json($orderJSON, 200);
+        } catch (\Throwable $th) {
+            return $this->json("Erreur serveur zby", 400);
+        }
     }
 }

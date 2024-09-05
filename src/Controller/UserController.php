@@ -10,10 +10,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
-  
+
     #[Route('/api/users', name: 'api_users', methods: ['GET'])]
     public function index(UserRepository $userRepository): JsonResponse
     {
@@ -509,7 +510,7 @@ class UserController extends AbstractController
                     "is_actif" => $user->isActif(),
                     "user_complements" => $userComplements,
                     "code_promo" => $codePromoData,
-                    "commandes"=>[]
+                    "commandes" => []
                 ];
             }
         } catch (\Throwable $th) {
@@ -517,5 +518,30 @@ class UserController extends AbstractController
         }
 
         return $this->json(["data" => $data]);
+    }
+
+    #[Route('/api/getmyinformation', name: 'app_get_my_information', methods: ['GET'])]
+    #[IsGranted('PUBLIC_ACCESS')]
+    public function getMyInformation()
+    {
+        try {
+            $user = $this->getUser();
+            if (!$user instanceof User) {
+                return $this->json('Utilisateur inconue', 404);
+            }
+
+            $userComplement = $user->getUserComplements()->first();
+            $userJson = [
+                "email" => $user->getEmail(),
+                "firstname" => $user->getFirstname(),
+                "lastname" => $user->getLastname(),
+                "adresse" => $userComplement->getAdresse(),
+                "phone" => $userComplement->getPhone(),
+                "postCode" => $userComplement->getZipCode(),
+            ];
+            return $this->json($userJson, 200);
+        } catch (\Throwable $th) {
+            return $this->json(`ERREUR SERVEUR, $th`, 500);
+        }
     }
 }

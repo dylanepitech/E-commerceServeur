@@ -182,4 +182,25 @@ class CodepromoController extends AbstractController
 
         return $this->json('Aucun code promotion trouvé', 404);
     }
+
+    #[Route('/api/deleteCodePromo', name: 'app_delete_code_promo', methods: ['POST'])]
+    public function deletepromocode(Request $request, CodePromotionRepository $codePromotionRepository, EntityManagerInterface $entityManagerInterface)
+    {
+        try {
+            $user = $this->getUser();
+
+            if (!$user instanceof User) {
+                return $this->json("Pas d'utilisateur trouver", 404);
+            }
+            $data = json_decode($request->getContent(), true);
+            $codePromo = $data['codePromo'];
+            $code = $codePromotionRepository->findOneBy(['code' => $codePromo]);
+
+            $entityManagerInterface->remove($code);
+            $entityManagerInterface->flush();
+            return $this->json('Code promo supprimer', 200);
+        } catch (\Throwable $th) {
+            return $this->json('Erreur serveur', 500);
+        }
+    }
 }

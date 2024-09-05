@@ -68,7 +68,7 @@ class Cart
         return $this;
     }
 
-    public function getDateStart(): ?\DateTimeImmutable 
+    public function getDateStart(): ?\DateTimeImmutable
     {
         return $this->date_start;
     }
@@ -80,7 +80,7 @@ class Cart
         return $this;
     }
 
-    public function getDateValidation(): ?\DateTimeImmutable 
+    public function getDateValidation(): ?\DateTimeImmutable
     {
         return $this->date_validation;
     }
@@ -99,6 +99,4 @@ class Cart
     {
         return $this->orders;
     }
-
-   
 }
